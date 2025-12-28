@@ -1,10 +1,9 @@
 { config, lib, pkgs, ... }:
-let
-  users = import (./users.nix);
+let users = import (./users.nix);
 in {
   services.systemUsers = {
-      enable = true;
-      inherit users;
-    };
+    enable = true;
+    inherit users;
+  };
 }
 

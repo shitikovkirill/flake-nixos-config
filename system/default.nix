@@ -1,4 +1,4 @@
 {
   nixpkgs.config.allowUnfree = true;
-  imports = [ ./users ];
+  imports = [ ./users ./time.nix ];
 }
