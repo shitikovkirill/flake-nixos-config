@@ -1,4 +1,6 @@
-{
+let
+  users = import (data/users.nix);
+in {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
   outputs = { self, nixpkgs, ... }: {
@@ -11,5 +13,11 @@
         ./data/users.nix
       ];
     };
+
+    services.systemUsers = {
+      enable = true;
+      inherit users;
+    };
+
   };
 }
