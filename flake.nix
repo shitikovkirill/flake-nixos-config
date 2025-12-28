@@ -12,12 +12,12 @@ in {
         ./desctop/xfce.nix
         ./data/users.nix
       ];
-    };
 
-    services.systemUsers = {
-      enable = true;
-      inherit users;
-    };
+      services.systemUsers = {
+        enable = true;
+        inherit users;
+      };
 
+    };
   };
 }
