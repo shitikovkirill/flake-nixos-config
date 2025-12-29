@@ -13,10 +13,11 @@
       modules = [
         /etc/nixos/configuration.nix
         home-manager.nixosModules.home-manager
-        ./development
         { home-manager.users.kirill.home.stateVersion = "25.11"; }
+        ./development
+        ./pkgs
+        ./system
       ];
-      #./mashine/asus-n56vj ./system ./desctop/xfce.nix ./data ];
     };
   };
 }

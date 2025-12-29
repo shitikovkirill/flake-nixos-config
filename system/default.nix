@@ -1,4 +1,4 @@
 {
   nixpkgs.config.allowUnfree = true;
-  imports = [ ./users ./time.nix ];
+  imports = [ ./users ./aliases.nix ];
 }
