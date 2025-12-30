@@ -17,7 +17,6 @@
         ./development
         ./pkgs
         ./system
-        ./system/mashine/asus-n56vj
       ];
     };
   };
