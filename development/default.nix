@@ -7,13 +7,13 @@
     ./direnv
     ./nix
     ./h
+    ./docker.nix
     ./ide.nix
-    #./tools
-    #./docker.nix
+    # ./electronics.nix
+    # ./tools
     # ./python
     # ./go.nix
-    #./database
-    #./electronics.nix
+    # ./database
   ];
 }
 
