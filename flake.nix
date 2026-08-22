@@ -17,6 +17,7 @@
         ./development
         ./pkgs
         ./system
+        ./server
       ];
     };
   };
