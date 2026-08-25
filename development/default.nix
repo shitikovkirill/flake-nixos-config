@@ -9,6 +9,7 @@
     ./h
     ./docker.nix
     ./ide.nix
+    ./ai
     # ./electronics.nix
     # ./tools
     # ./python
