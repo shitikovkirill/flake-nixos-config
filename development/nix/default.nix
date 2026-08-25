@@ -16,7 +16,7 @@ in {
     nox
     nix-info
     nix-index
-    nixfmt-classic
+    nixfmt
     nix-prefetch-git
     containersRm
   ];
