@@ -10,7 +10,8 @@ let
         echo "You have activ container"
     fi
   '';
-in {
+in
+{
   environment.systemPackages = with pkgs; [
     niv
     nox
@@ -23,9 +24,7 @@ in {
 
   environment.shellAliases = {
     nixfmt_this = "find . -print -name '*.nix' -exec nixfmt {} \\;";
-    clear_nixp =
-      "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old && nix-collect-garbage -d && sudo nix-collect-garbage -d";
-    nixp =
-      "nix-store --query --requisites /run/current-system | cut -d- -f2- | sort | uniq";
+    clear_nixp = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old && nix-collect-garbage -d && sudo nix-collect-garbage -d";
+    nixp = "nix-store --query --requisites /run/current-system | cut -d- -f2- | sort | uniq";
   };
 }

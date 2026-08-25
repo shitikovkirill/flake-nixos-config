@@ -1,5 +1,8 @@
 { lib, pkgs, ... }:
 
 {
-  environment.systemPackages = with pkgs; [ torrential flood ];
+  environment.systemPackages = with pkgs; [
+    torrential
+    flood
+  ];
 }

@@ -4,7 +4,8 @@ let
   hInit = ''
     eval "$(h --setup ~/Code)"
   '';
-in {
+in
+{
   environment.systemPackages = with pkgs; [ h ];
 
   programs.zsh.shellInit = hInit;

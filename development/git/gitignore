@@ -11,3 +11,4 @@ not_in_git*
 profile.nix
 result
 venv*
+.mcp.json

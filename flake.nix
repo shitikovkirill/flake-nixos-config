@@ -7,18 +7,25 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: {
-    nixosConfigurations.asus-n56vj = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        /etc/nixos/configuration.nix
-        home-manager.nixosModules.home-manager
-        { home-manager.users.kirill.home.stateVersion = "26.05"; }
-        ./development
-        ./pkgs
-        ./system
-        ./server
-      ];
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
+    {
+      nixosConfigurations.asus-n56vj = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          /etc/nixos/configuration.nix
+          home-manager.nixosModules.home-manager
+          { home-manager.users.kirill.home.stateVersion = "26.05"; }
+          ./development
+          ./pkgs
+          ./system
+          ./server
+        ];
+      };
     };
-  };
 }

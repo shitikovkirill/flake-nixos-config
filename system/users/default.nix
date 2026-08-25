@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.services.systemUsers;
@@ -11,7 +16,8 @@ let
     Version: ${system.nixos.version}
     Kernel:  ${boot.kernelPackages.kernel.version}
   '';
-in {
+in
+{
   options = {
     services.systemUsers = {
       enable = mkOption {
@@ -21,33 +27,35 @@ in {
         '';
       };
       users = mkOption {
-        type = types.listOf (types.submodule {
-          options = {
-            name = mkOption {
-              type = types.str;
-              description = ''
-                User name.
-              '';
+        type = types.listOf (
+          types.submodule {
+            options = {
+              name = mkOption {
+                type = types.str;
+                description = ''
+                  User name.
+                '';
+              };
+              description = mkOption {
+                type = types.str;
+                default = "";
+                description = ''
+                  Description.
+                '';
+              };
+              groups = mkOption {
+                type = types.listOf types.str;
+                default = [ ];
+                description = lib.mdDoc "User groups.";
+              };
+              keys = mkOption {
+                type = types.listOf types.str;
+                default = [ ];
+                description = lib.mdDoc "User kays.";
+              };
             };
-            description = mkOption {
-              type = types.str;
-              default = "";
-              description = ''
-                Description.
-              '';
-            };
-            groups = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              description = lib.mdDoc "User groups.";
-            };
-            keys = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              description = lib.mdDoc "User kays.";
-            };
-          };
-        });
+          }
+        );
         default = [ ];
         description = ''
           List of users.
@@ -60,15 +68,17 @@ in {
     users = {
       mutableUsers = false;
       inherit motd;
-      users = listToAttrs (map (u: {
-        name = u.name;
-        value = {
-          isNormalUser = true;
-          description = u.description;
-          extraGroups = u.groups;
-          openssh.authorizedKeys.keys = u.keys;
-        };
-      }) cfg.users);
+      users = listToAttrs (
+        map (u: {
+          name = u.name;
+          value = {
+            isNormalUser = true;
+            description = u.description;
+            extraGroups = u.groups;
+            openssh.authorizedKeys.keys = u.keys;
+          };
+        }) cfg.users
+      );
     };
   };
 }

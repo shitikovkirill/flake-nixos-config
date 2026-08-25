@@ -1,5 +1,8 @@
 { lib, pkgs, ... }:
 
 {
-  environment.systemPackages = with pkgs; [ vlc vokoscreen-ng ];
+  environment.systemPackages = with pkgs; [
+    vlc
+    vokoscreen-ng
+  ];
 }

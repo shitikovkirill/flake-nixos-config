@@ -1,5 +1,5 @@
 {
-  imports = [ 
+  imports = [
     ./k8s
   ];
 }

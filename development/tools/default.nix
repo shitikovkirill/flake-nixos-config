@@ -1,7 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
-  environment.systemPackages = with pkgs; [ bruno postman xmind ];
+  environment.systemPackages = with pkgs; [
+    bruno
+    postman
+    xmind
+  ];
 
   imports = [ ./jetbrains.nix ];
 }

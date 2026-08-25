@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # Define all MCP servers configurations
@@ -14,41 +19,38 @@ let
     # Web
     fetch = {
       command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
-      disabled = true;
     };
     playwright = {
       command = "${pkgs.playwright-mcp}/bin/playwright-mcp";
-      disabled = true;
     };
 
     # DevOps
     k8s = {
       command = "${pkgs.mcp-k8s-go}/bin/mcp-k8s-go";
-      disabled = true;
     };
     nixos = {
       command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
-      disabled = true;
     };
 
     # AI
     "sequential-thinking" = {
       command = "${pkgs.mcp-server-sequential-thinking}/bin/mcp-server-sequential-thinking";
-      disabled = true;
     };
 
     # Utils
     markitdown = {
       command = "${pkgs.markitdown-mcp}/bin/markitdown-mcp";
-      disabled = true;
     };
 
     # Language Servers
     "language-server" = {
       command = "${pkgs.mcp-language-server}/bin/mcp-language-server";
       args = [
-        "--language-server"
+        "--lsp"
         "${pkgs.pyright}/bin/pyright-langserver"
+        "--workspace"
+        "\${LSP_WORKSPACE}"
+        "--"
         "--stdio"
       ];
     };

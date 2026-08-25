@@ -1,4 +1,11 @@
-{ lib, pkgs, buildPythonPackage, fetchPypi, pythonPackages, cookiecutter }:
+{
+  lib,
+  pkgs,
+  buildPythonPackage,
+  fetchPypi,
+  pythonPackages,
+  cookiecutter,
+}:
 buildPythonPackage rec {
   pname = "create-aio-app";
   version = "0.0.9";
@@ -9,7 +16,10 @@ buildPythonPackage rec {
   };
 
   buildInputs = with pythonPackages; [ setuptools-scm-git-archive ];
-  propagatedBuildInputs = [ pythonPackages.click cookiecutter ];
+  propagatedBuildInputs = [
+    pythonPackages.click
+    cookiecutter
+  ];
 
   doCheck = false;
   preBuild = "echo 'import setuptools; setuptools.setup()' > setup.py";

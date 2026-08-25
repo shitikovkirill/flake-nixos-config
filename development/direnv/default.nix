@@ -1,7 +1,15 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
-  environment.systemPackages = with pkgs; [ direnv nix-direnv ];
+  environment.systemPackages = with pkgs; [
+    direnv
+    nix-direnv
+  ];
   # services.lorri.enable = true;
 
   programs = {
@@ -27,6 +35,8 @@
   environment.pathsToLink = [ "/share/nix-direnv" ];
 
   home-manager.users.kirill = {
-    home = { file.".direnvrc".source = ./direnvrc; };
+    home = {
+      file.".direnvrc".source = ./direnvrc;
+    };
   };
 }

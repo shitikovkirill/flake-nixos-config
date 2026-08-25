@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  snx = pkgs.callPackage ./snx {};
+  snx = pkgs.callPackage ./snx { };
 in
 {
   nixpkgs.config.allowUnfree = true;

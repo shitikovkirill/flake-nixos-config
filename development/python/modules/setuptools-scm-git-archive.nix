@@ -1,4 +1,10 @@
-{ lib, pkgs, buildPythonPackage, fetchPypi, pythonPackages }:
+{
+  lib,
+  pkgs,
+  buildPythonPackage,
+  fetchPypi,
+  pythonPackages,
+}:
 
 buildPythonPackage rec {
   pname = "setuptools_scm_git_archive";

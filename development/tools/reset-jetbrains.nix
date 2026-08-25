@@ -1,7 +1,8 @@
 { writeShellScriptBin }:
 
 {
-  reset = name:
+  reset =
+    name:
     writeShellScriptBin "reset-${name}" ''
       echo "Removing evaluation key for ${name}"
       rm -rf ~/.config/JetBrains/${name}*/eval

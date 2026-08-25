@@ -4,7 +4,8 @@ let
   script = import ./reset-jetbrains.nix {
     writeShellScriptBin = pkgs.writeShellScriptBin;
   };
-in {
+in
+{
   environment.systemPackages = with pkgs; [
     jetbrains.pycharm-professional
     jetbrains.datagrip
