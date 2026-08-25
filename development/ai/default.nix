@@ -3,7 +3,7 @@
 {
   imports = [
     ./claude.nix
-    ./mcp.nix
+    ./mcp
     #./openai.nix
     #./local-llm.nix
     #./code-assistants.nix
