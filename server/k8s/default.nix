@@ -11,4 +11,8 @@
     enable = true;
     role = "server";
   };
+
+  networking.hosts = {
+    "127.0.0.1" = [ "k3s.local" ];
+  };
 }
