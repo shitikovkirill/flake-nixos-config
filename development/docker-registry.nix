@@ -24,19 +24,16 @@
   # Nginx reverse proxy для Docker Registry
   services.nginx = {
     enable = true;
-    httpConfig = ''
-      upstream docker-registry {
-        server 127.0.0.1:5000;
-      }
-
-      server {
-        listen 127.0.0.1:80;
-        server_name registry.home;
-
-        client_max_body_size 0;
-
-        location / {
-          proxy_pass http://docker-registry;
+    virtualHosts."registry.home" = {
+      serverName = "registry.home";
+      listen = [
+        { addr = "127.0.0.1"; port = 80; }
+      ];
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:5000";
+        proxyWebsockets = true;
+        extraConfig = ''
+          client_max_body_size 0;
           proxy_set_header Host $http_host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -45,9 +42,9 @@
           proxy_request_buffering off;
           proxy_read_timeout 600s;
           proxy_send_timeout 600s;
-        }
-      }
-    '';
+        '';
+      };
+    };
   };
 
   # Добавить запись в /etc/hosts
