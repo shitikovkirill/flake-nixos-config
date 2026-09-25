@@ -7,7 +7,7 @@
   services.dockerRegistry = {
     enable = true;
     port = 5000;
-    listenAddress = "0.0.0.0";
+    listenAddress = "127.0.0.1";
     storagePath = "/home/docker-registry/data";
 
     extraConfig = {
@@ -25,9 +25,9 @@
   services.nginx = {
     enable = true;
     virtualHosts."registry.home" = {
+      serverName = "registry.home";
       listen = [
-        { addr = "0.0.0.0"; port = 80; }
-        { addr = "[::]"; port = 80; }
+        { addr = "127.0.0.1"; port = 80; }
       ];
 
       locations."/" = {
