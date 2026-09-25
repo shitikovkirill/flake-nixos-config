@@ -1,24 +1,14 @@
 { config, pkgs, ... }:
 
 {
-  # Создать пользователя для Docker Registry
-  users.users.docker-registry = {
-    isSystemUser = true;
-    group = "docker-registry";
-    home = "/home/docker-registry";
-    createHome = true;
-  };
-
-  users.groups.docker-registry = { };
-
   # Встроенный Docker Registry (Native NixOS)
+  # Note: The dockerRegistry module automatically creates a 'docker-registry'
+  # system user and uses it to run the service, so we don't need to declare it
   services.dockerRegistry = {
     enable = true;
     port = 5000;
     listenAddress = "0.0.0.0";
     storagePath = "/home/docker-registry/data";
-    user = "docker-registry";
-    group = "docker-registry";
 
     extraConfig = {
       delete.enabled = true;
