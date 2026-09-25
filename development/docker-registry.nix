@@ -29,7 +29,9 @@
       listen = [
         { addr = "127.0.0.1"; port = 80; }
       ];
-      clientMaxBodySize = "512m";
+      extraConfig = ''
+        client_max_body_size 512m;
+      '';
       locations."/" = {
         proxyPass = "http://127.0.0.1:5000";
         extraConfig = ''
