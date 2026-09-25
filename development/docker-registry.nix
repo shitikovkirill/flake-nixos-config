@@ -16,7 +16,6 @@
 
   # Открыть порт в файрволе
   networking.firewall.allowedTCPPorts = [
-    5000  # Docker Registry
     80    # HTTP для nginx
   ];
 
