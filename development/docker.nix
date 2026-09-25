@@ -39,6 +39,64 @@
     };
   };
 
+  # Периодические задачи очистки Docker
+  systemd.services.docker-cleanup-cache = {
+    description = "Clean Docker build cache";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.docker}/bin/docker builder prune -af";
+      User = "root";
+    };
+  };
+
+  systemd.services.docker-cleanup-images = {
+    description = "Clean Docker dangling images";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.docker}/bin/docker image prune -af";
+      User = "root";
+    };
+  };
+
+  systemd.timers.docker-cleanup-cache = {
+    description = "Run Docker build cache cleanup weekly";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "Sun *-*-* 02:00:00";
+      Persistent = true;
+    };
+    unitConfig.After = "docker.service";
+  };
+
+  systemd.timers.docker-cleanup-images = {
+    description = "Run Docker image cleanup daily";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 03:00:00";
+      Persistent = true;
+    };
+    unitConfig.After = "docker.service";
+  };
+
+  systemd.services.docker-cleanup-volumes = {
+    description = "Clean Docker dangling volumes";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.docker}/bin/docker volume prune -af";
+      User = "root";
+    };
+  };
+
+  systemd.timers.docker-cleanup-volumes = {
+    description = "Run Docker volume cleanup weekly";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "Mon *-*-* 02:30:00";
+      Persistent = true;
+    };
+    unitConfig.After = "docker.service";
+  };
+
   environment.shellAliases = {
     drmc = "docker rm $(docker ps -a -q)";
     drimage = "docker rmi $(docker images -q)";
@@ -63,5 +121,12 @@
     mk_ip = "sudo minikube ip";
     mk_dash = "sudo minikube dashboard";
     azurite = "docker run --rm --name=azurite --log-driver=journald -p '10000:10000' -p '10001:10001' -v 'azurite_blob:/data' mcr.microsoft.com/azure-storage/azurite";
+
+    # Docker cleanup tasks
+    dclean-cache = "sudo systemctl start docker-cleanup-cache";
+    dclean-images = "sudo systemctl start docker-cleanup-images";
+    dclean-volumes = "sudo systemctl start docker-cleanup-volumes";
+    dclean-all = "sudo systemctl start docker-cleanup-cache docker-cleanup-images docker-cleanup-volumes";
+    dclean-status = "systemctl status docker-cleanup-cache docker-cleanup-images docker-cleanup-volumes";
   };
 }
