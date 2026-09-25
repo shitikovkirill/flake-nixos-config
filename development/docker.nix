@@ -16,9 +16,19 @@
   virtualisation.docker = {
     enable = true;
     enableOnBoot = false;
+    daemon.settings = {
+      hosts = [
+        "unix:///var/run/docker.sock"
+        "tcp://0.0.0.0:2375"
+      ];
+    };
   };
 
   users.users.kirill.extraGroups = [ "docker" ];
+
+  networking.firewall.allowedTCPPorts = [
+    2375  # Docker remote API
+  ];
 
   programs.zsh = {
     ohMyZsh = {
