@@ -16,7 +16,7 @@
     enable = true;
     role = "server";
     serverAddr = "https://k3s.local:6443";
-    extraFlags = "--data-dir=/home/k3s/data --disable=traefik";
+    extraFlags = "--data-dir=/home/k3s/data";
   };
 
   # Ensure k3s waits for registry certificate
