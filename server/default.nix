@@ -1,7 +1,7 @@
 {
   imports = [
     ./k8s
-    ./docker.nix
+    ./docker
     ./docker-registry
   ];
 }
