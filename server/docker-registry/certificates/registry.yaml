@@ -40,14 +40,22 @@ metadata:
     version: v2
   annotations:
     description: "Docker Registry service - self-signed TLS"
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "5000"
-    prometheus.io/path: "/metrics"
 spec:
-  type: ExternalName
-  externalName: 192.168.1.14
+  type: ClusterIP
   ports:
     - name: http
       port: 5000
       targetPort: 5000
       protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: docker-registry-svc
+  namespace: kube-system
+subsets:
+  - addresses:
+      - ip: 192.168.1.14
+    ports:
+      - name: http
+        port: 5000
