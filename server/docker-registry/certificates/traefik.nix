@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 let
   certDir = "/var/lib/registry-certs";
@@ -17,7 +17,7 @@ let
   );
 
 in
-{
+lib.mkIf (config.services.k3s.enable or false) {
   # Update Traefik Secret after certificate is set up
   systemd.services.update-traefik-registry-secret = {
     description = "Update Traefik Secret with registry certificate";

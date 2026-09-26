@@ -1,6 +1,6 @@
-{ pkgs, ... }:
+{ config, lib, ... }:
 
-{
+lib.mkIf (!(config.services.k3s.enable or false)) {
   services.nginx = {
     enable = true;
     recommendedProxySettings = true;
