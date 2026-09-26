@@ -7,13 +7,13 @@ let
 in
 {
   imports = [
-    ./certificate.nix
+    ./certificates
     ./registry.nix
   ] ++ (
     if tlsBackend == "traefik" then
-      [ ./tls-traefik.nix ]
+      [ ./certificates/traefik.nix ]
     else
-      [ ./tls-nginx.nix ]
+      [ ./certificates/nginx.nix ]
   );
 
   # Add entry to /etc/hosts
