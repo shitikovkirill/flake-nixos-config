@@ -12,12 +12,7 @@ let
     (builtins.readFile (scriptsDir + "/update-traefik-secret.sh"))
   );
 
-  applyRegistryManifests = pkgs.writeShellScriptBin "apply-registry-manifests" (
-    lib.replaceStrings
-      [ ''$(dirname "$0")/..'' ]
-      [ "${./registry.yaml}" ]
-      (builtins.readFile (scriptsDir + "/apply-registry-manifests.sh"))
-  );
+  applyRegistryManifests = pkgs.writeShellScriptBin "apply-registry-manifests" (builtins.readFile (scriptsDir + "/apply-registry-manifests.sh"));
 
 in
 lib.mkIf (config.services.k3s.enable or false) {
@@ -51,6 +46,9 @@ lib.mkIf (config.services.k3s.enable or false) {
       ExecStart = "${applyRegistryManifests}/bin/apply-registry-manifests";
       RemainAfterExit = true;
     };
-    environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+    environment = {
+      KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+      REGISTRY_MANIFEST_PATH = "${./registry.yaml}";
+    };
   };
 }
