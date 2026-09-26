@@ -12,8 +12,6 @@
     ./direnv
     ./nix
     ./h
-    ./docker.nix
-    ./docker-registry.nix
     ./ide.nix
     ./ai
     # ./electronics.nix
