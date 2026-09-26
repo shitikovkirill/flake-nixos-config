@@ -13,7 +13,10 @@ let
   );
 
   applyRegistryManifests = pkgs.writeShellScriptBin "apply-registry-manifests" (
-    (builtins.readFile (scriptsDir + "/apply-registry-manifests.sh")).replace "\"$(dirname \"$0\")/..\"" "${./registry.yaml}"
+    lib.replaceStrings
+      [ ''$(dirname "$0")/..'' ]
+      [ "${./registry.yaml}" ]
+      (builtins.readFile (scriptsDir + "/apply-registry-manifests.sh"))
   );
 
 in
