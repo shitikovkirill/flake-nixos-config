@@ -21,11 +21,7 @@
     enable = true;
     role = "server";
     serverAddr = "https://k3s.local:6443";
-    extraFlags = "--data-dir=/home/k3s/data --flannel-backend=vxlan";
-
-    manifests.flannel = {
-      source = ./flannel-manifest.yaml;
-    };
+    extraFlags = "--data-dir=/home/k3s/data";
   };
 
   systemd.tmpfiles.rules = [
