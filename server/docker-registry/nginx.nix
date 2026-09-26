@@ -33,4 +33,8 @@ in
       };
     };
   };
+
+  # Ensure nginx waits for certificates to be in place
+  systemd.services.nginx.after = [ "setup-registry-cert.service" ];
+  systemd.services.nginx.requires = [ "setup-registry-cert.service" ];
 }

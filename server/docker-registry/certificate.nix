@@ -1,10 +1,6 @@
 { pkgs, config, ... }:
 
 let
-  certDir = "/var/lib/registry-certs";
-  certFile = "${certDir}/registry.home.crt";
-  keyFile = "${certDir}/registry.home.key";
-
   registryCert = pkgs.runCommand "registry-home-cert" {
     buildInputs = [ pkgs.openssl ];
   } ''
@@ -14,6 +10,8 @@ let
       -days 365 -nodes \
       -subj "/C=RU/ST=Moscow/L=Moscow/O=Home/CN=registry.home"
   '';
+
+  certDir = "/var/lib/registry-certs";
 in
 {
   imports = [];
@@ -30,10 +28,10 @@ in
     wantedBy = [ "multi-user.target" ];
     serviceConfig.Type = "oneshot";
     script = ''
-      cp ${registryCert}/registry.home.crt ${certFile}
-      cp ${registryCert}/registry.home.key ${keyFile}
-      chmod 644 ${certFile}
-      chmod 600 ${keyFile}
+      cp ${registryCert}/registry.home.crt ${certDir}/registry.home.crt
+      cp ${registryCert}/registry.home.key ${certDir}/registry.home.key
+      chmod 644 ${certDir}/registry.home.crt
+      chmod 600 ${certDir}/registry.home.key
     '';
   };
 
