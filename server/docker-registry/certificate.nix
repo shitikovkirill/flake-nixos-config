@@ -13,6 +13,33 @@ let
   '';
 
   certDir = "/var/lib/registry-certs";
+
+  # Script to update Traefik Secret with new certificate
+  updateTraefikSecret = pkgs.writeShellScript "update-traefik-secret" ''
+    set -e
+
+    CERT=$(cat ${certDir}/registry.home.crt | base64 -w0)
+    KEY=$(cat ${certDir}/registry.home.key | base64 -w0)
+
+    # Create temporary Secret manifest
+    cat > /tmp/registry-secret.yaml << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-home-tls
+  namespace: kube-system
+type: kubernetes.io/tls
+data:
+  tls.crt: $CERT
+  tls.key: $KEY
+EOF
+
+    # Apply the secret (recreate if exists)
+    ${pkgs.kubectl}/bin/kubectl apply -f /tmp/registry-secret.yaml
+
+    # Clean up
+    rm -f /tmp/registry-secret.yaml
+  '';
 in
 {
   imports = [];
@@ -34,6 +61,20 @@ in
       chmod 644 ${certDir}/registry.home.crt
       chmod 644 ${certDir}/registry.home.key
     '';
+  };
+
+  # Update Traefik Secret after certificate is set up
+  systemd.services.update-traefik-registry-secret = {
+    description = "Update Traefik Secret with registry certificate";
+    after = [ "setup-registry-cert.service" "k3s.service" ];
+    wants = [ "setup-registry-cert.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = updateTraefikSecret;
+      RemainAfterExit = true;
+    };
+    environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };
 
   # Trust the self-signed certificate
