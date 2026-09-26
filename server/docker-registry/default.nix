@@ -16,15 +16,16 @@ in
       [ ./certificates/nginx.nix ]
   );
 
-  # Add entry to /etc/hosts
-  networking.hosts = {
-    "127.0.0.1" = [ "registry.home" ];
-  };
-
-  # Configuration option for TLS backend (can override auto-detection)
   options.services.dockerRegistry.tlsBackend = {
     type = "str";
     default = tlsBackend;
     description = "TLS termination backend: 'traefik' (requires k3s) or 'nginx'. Auto-detects based on k3s.enable.";
+  };
+
+  config = {
+    # Add entry to /etc/hosts
+    networking.hosts = {
+      "127.0.0.1" = [ "registry.home" ];
+    };
   };
 }
