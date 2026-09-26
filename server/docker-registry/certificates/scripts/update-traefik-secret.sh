@@ -35,20 +35,13 @@ echo "[INFO] Deleting existing secret (if any)..."
 kubectl delete secret registry-home-tls -n kube-system --ignore-not-found=true
 echo "[INFO] Old secret deleted"
 
-# Create temporary Secret manifest
-echo "[INFO] Creating secret manifest..."
+# Create temporary Secret manifest from template
+echo "[INFO] Creating secret manifest from template..."
+TEMPLATE_PATH="${SECRET_TEMPLATE_PATH:?SECRET_TEMPLATE_PATH not set}"
+echo "[DEBUG] Using template: $TEMPLATE_PATH"
 MANIFEST="/tmp/registry-secret.yaml"
-cat > "$MANIFEST" << EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: registry-home-tls
-  namespace: kube-system
-type: kubernetes.io/tls
-data:
-  tls.crt: $CERT
-  tls.key: $KEY
-EOF
+
+sed -e "s/CERT_DATA_PLACEHOLDER/$CERT/g" -e "s/KEY_DATA_PLACEHOLDER/$KEY/g" "$TEMPLATE_PATH" > "$MANIFEST"
 echo "[DEBUG] Manifest created at: $MANIFEST"
 
 # Apply the secret

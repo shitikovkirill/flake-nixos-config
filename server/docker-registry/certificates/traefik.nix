@@ -32,6 +32,7 @@ lib.mkIf (config.services.k3s.enable or false) {
       KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
       CERT_DIR = certDir;
       WAIT_FOR_K8S_SCRIPT = "${waitForK8s}/bin/wait-for-k8s";
+      SECRET_TEMPLATE_PATH = "${./secret.yaml}";
     };
   };
 
