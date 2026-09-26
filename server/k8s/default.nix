@@ -7,11 +7,21 @@
     k3s
   ];
 
+  # Create k3s user for data directory ownership
+  users.users.k3s = {
+    isSystemUser = true;
+    group = "k3s";
+    home = "/home/k3s";
+    createHome = true;
+  };
+
+  users.groups.k3s = {};
+
   services.k3s = {
     enable = true;
     role = "server";
     serverAddr = "https://k3s.local:6443";
-    extraFlags = "--flannel-backend=vxlan";
+    extraFlags = "--data-dir=/home/k3s/data --flannel-backend=vxlan";
 
     manifests.flannel = {
       source = ./flannel-manifest.yaml;
@@ -20,6 +30,8 @@
 
   systemd.tmpfiles.rules = [
     "d /etc/rancher/k3s 0755 root root -"
+    "d /home/k3s 0755 k3s k3s -"
+    "d /home/k3s/data 0755 k3s k3s -"
   ];
 
   environment.etc."rancher/k3s/registries.yaml" = {
