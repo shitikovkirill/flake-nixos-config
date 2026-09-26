@@ -24,6 +24,9 @@
     extraFlags = "--data-dir=/home/k3s/data";
   };
 
+  # Set KUBECONFIG for kubectl access
+  environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+
   systemd.tmpfiles.rules = [
     "d /etc/rancher/k3s 0755 root root -"
     "d /home/k3s 0755 k3s k3s -"
