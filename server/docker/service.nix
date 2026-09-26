@@ -1,6 +1,16 @@
 { config, ... }:
 
 {
+  # Docker user
+  users.users.docker = {
+    isSystemUser = true;
+    group = "docker";
+    home = "/home/docker";
+    createHome = true;
+  };
+
+  users.groups.docker = {};
+
   # Docker service configuration
   virtualisation.docker = {
     enable = true;

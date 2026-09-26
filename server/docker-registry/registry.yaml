@@ -45,6 +45,14 @@ kind: Service
 metadata:
   name: docker-registry-svc
   namespace: kube-system
+  labels:
+    app: docker-registry
+    version: v2
+  annotations:
+    description: "Docker Registry service - self-signed TLS"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
 spec:
   type: ExternalName
   externalName: 127.0.0.1

@@ -53,6 +53,12 @@ Docker Registry service configuration:
 - Features:
   - Image deletion enabled
   - Storage redirect disabled
+  - Health checks enabled (storage driver validation)
+  - JSON logging for better monitoring
+- Resource limits:
+  - Memory: 512M max, 400M high water mark
+  - CPU: 200% quota (2 cores)
+  - IO weight: 500 (normal priority)
 
 ### `registry.yaml`
 Kubernetes manifests for Traefik integration:
@@ -157,6 +163,54 @@ Docker Registry API listens on localhost:5000 (no external access).
 - `registry.home` resolves to `127.0.0.1` via `/etc/hosts`
 - TLS certificate valid for `registry.home` and `localhost`
 
+## Monitoring & Health Checks
+
+### Health Check Status
+
+The registry includes an automatic health check service that validates connectivity:
+```bash
+systemctl status docker-registry-health
+journalctl -u docker-registry-health -f
+```
+
+### Resource Usage Monitoring
+
+View current resource consumption:
+```bash
+# Memory usage
+systemctl show docker-registry --property MemoryCurrent
+
+# CPU accounting
+systemctl show docker-registry --property CPUUsageNSec
+
+# Full service status with metrics
+systemctl status docker-registry
+```
+
+### Kubernetes Monitoring
+
+The service includes Prometheus annotations for monitoring:
+```bash
+# Check Prometheus service discovery
+kubectl get endpoints -A | grep docker-registry
+```
+
+### Registry API Health
+
+Check registry API directly:
+```bash
+curl -k https://registry.home/v2/
+```
+
+Expected response: HTTP 200 (empty body)
+
+### Logs
+
+View registry logs with JSON formatting:
+```bash
+journalctl -u docker-registry -f
+```
+
 ## Troubleshooting
 
 ### Certificate validation errors
@@ -180,6 +234,34 @@ kubectl describe ingressroute registry-home -n kube-system
 Verify k3s registry configuration:
 ```bash
 cat /etc/rancher/k3s/registries.yaml
+```
+
+### Health check service failing
+
+If `docker-registry-health` service is failing:
+```bash
+# Check service status
+systemctl status docker-registry-health
+
+# View recent logs
+journalctl -u docker-registry-health -n 20
+
+# Test manually
+curl -f http://localhost:5000/v2/ && echo "Health OK" || echo "Health FAILED"
+```
+
+### Out of memory errors
+
+If registry is hitting memory limits:
+```bash
+# Check current limits
+systemctl show docker-registry --property MemoryMax
+systemctl show docker-registry --property MemoryHigh
+
+# Monitor memory usage
+watch -n 1 'systemctl show docker-registry --property MemoryCurrent'
+
+# Increase limits in registry.nix if needed (e.g., MemoryMax = "1G")
 ```
 
 ## Storage
