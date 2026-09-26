@@ -10,10 +10,13 @@ echo "[INFO] Kubernetes API server is ready"
 
 # Get the host IP (first non-loopback IP address)
 echo "[INFO] Detecting host IP address..."
-ALL_IPS=$(hostname -I 2>/dev/null || echo "")
-echo "[DEBUG] All IPs from hostname -I: '$ALL_IPS'"
-HOST_IP=$(echo "$ALL_IPS" | awk '{print $1}')
-echo "[DEBUG] Selected first IP: '$HOST_IP'"
+# Try hostname -I first, then fall back to ip addr
+HOST_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+if [ -z "$HOST_IP" ]; then
+  echo "[DEBUG] hostname -I returned empty, trying ip addr..."
+  HOST_IP=$(ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '^127\.' | head -1)
+fi
+echo "[DEBUG] Detected host IP: '$HOST_IP'"
 
 # Validate IP
 if [ -z "$HOST_IP" ]; then

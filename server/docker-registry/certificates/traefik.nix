@@ -41,7 +41,7 @@ lib.mkIf (config.services.k3s.enable or false) {
     after = [ "update-traefik-registry-secret.service" ];
     wants = [ "update-traefik-registry-secret.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = with pkgs; [ kubectl coreutils gawk ];
+    path = with pkgs; [ kubectl coreutils gawk gnugrep iproute2 ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${applyRegistryManifests}/bin/apply-registry-manifests";
