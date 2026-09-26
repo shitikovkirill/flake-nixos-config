@@ -8,6 +8,4 @@
     k3s
   ];
 
-  # Set KUBECONFIG for kubectl access
-  environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
 }
