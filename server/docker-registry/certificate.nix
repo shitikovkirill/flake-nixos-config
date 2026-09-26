@@ -32,59 +32,6 @@ let
 
   certDir = "/var/lib/registry-certs";
 
-  # Wait for Kubernetes API server to be ready
-  waitForK8s = pkgs.writeShellScript "wait-for-k8s" ''
-    for i in {1..60}; do
-      if ${pkgs.kubectl}/bin/kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml cluster-info &>/dev/null; then
-        exit 0
-      fi
-      echo "Waiting for Kubernetes API server... ($i/60)"
-      sleep 1
-    done
-    echo "Kubernetes API server did not become ready after 60 seconds"
-    exit 1
-  '';
-
-  # Script to update Traefik Secret with new certificate
-  updateTraefikSecret = pkgs.writeShellScript "update-traefik-secret" ''
-    set -e
-
-    ${waitForK8s}
-
-    CERT=$(cat ${certDir}/registry.home.crt | base64 -w0)
-    KEY=$(cat ${certDir}/registry.home.key | base64 -w0)
-
-    # Delete existing secret to force regeneration
-    ${pkgs.kubectl}/bin/kubectl delete secret registry-home-tls -n kube-system --ignore-not-found=true
-
-    # Create temporary Secret manifest
-    cat > /tmp/registry-secret.yaml << EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: registry-home-tls
-  namespace: kube-system
-type: kubernetes.io/tls
-data:
-  tls.crt: $CERT
-  tls.key: $KEY
-EOF
-
-    # Apply the secret
-    ${pkgs.kubectl}/bin/kubectl apply -f /tmp/registry-secret.yaml
-
-    # Clean up
-    rm -f /tmp/registry-secret.yaml
-  '';
-
-  # Script to apply registry manifests after Secret is created
-  applyRegistryManifests = pkgs.writeShellScript "apply-registry-manifests" ''
-    set -e
-
-    ${waitForK8s}
-
-    ${pkgs.kubectl}/bin/kubectl apply -f ${./registry.yaml}
-  '';
 in
 {
   imports = [];
@@ -106,34 +53,6 @@ in
       chmod 644 ${certDir}/registry.home.crt
       chmod 644 ${certDir}/registry.home.key
     '';
-  };
-
-  # Update Traefik Secret after certificate is set up
-  systemd.services.update-traefik-registry-secret = {
-    description = "Update Traefik Secret with registry certificate";
-    after = [ "setup-registry-cert.service" "k3s.service" ];
-    wants = [ "setup-registry-cert.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = updateTraefikSecret;
-      RemainAfterExit = true;
-    };
-    environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
-  };
-
-  # Apply registry manifests (IngressRoute, Service, TLSStore) after Secret is updated
-  systemd.services.apply-registry-manifests = {
-    description = "Apply Traefik registry manifests";
-    after = [ "update-traefik-registry-secret.service" ];
-    wants = [ "update-traefik-registry-secret.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = applyRegistryManifests;
-      RemainAfterExit = true;
-    };
-    environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };
 
   # Trust the self-signed certificate
