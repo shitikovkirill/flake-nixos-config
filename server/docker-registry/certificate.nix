@@ -18,6 +18,15 @@ let
   updateTraefikSecret = pkgs.writeShellScript "update-traefik-secret" ''
     set -e
 
+    # Wait for Kubernetes API server to be ready
+    for i in {1..60}; do
+      if ${pkgs.kubectl}/bin/kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml cluster-info &>/dev/null; then
+        break
+      fi
+      echo "Waiting for Kubernetes API server... ($i/60)"
+      sleep 1
+    done
+
     CERT=$(cat ${certDir}/registry.home.crt | base64 -w0)
     KEY=$(cat ${certDir}/registry.home.key | base64 -w0)
 
