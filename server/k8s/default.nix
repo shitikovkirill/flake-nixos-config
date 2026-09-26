@@ -1,14 +1,5 @@
 { config, pkgs, ... }:
 
-let
-  # Official Flannel manifest from upstream, patched for k3s cluster CIDR (10.42.0.0/16)
-  flannel-manifest = pkgs.runCommand "flannel-manifest.yaml" {
-    buildInputs = [ pkgs.curl ];
-  } ''
-    curl -s https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml \
-      | sed 's|"Network": "10.244.0.0/16"|"Network": "10.42.0.0/16"|g' > $out
-  '';
-in
 {
   environment.systemPackages = with pkgs; [
     kubectl
@@ -23,8 +14,7 @@ in
     extraFlags = "--flannel-backend=vxlan";
 
     manifests.flannel = {
-      source = flannel-manifest;
-      target = "flannel.yaml";
+      source = ./flannel-manifest.yaml;
     };
   };
 
