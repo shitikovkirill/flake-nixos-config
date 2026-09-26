@@ -55,6 +55,15 @@ EOF
     # Clean up
     rm -f /tmp/registry-secret.yaml
   '';
+
+  # Script to apply registry manifests after Secret is created
+  applyRegistryManifests = pkgs.writeShellScript "apply-registry-manifests" ''
+    set -e
+
+    ${waitForK8s}
+
+    ${pkgs.kubectl}/bin/kubectl apply -f ${./registry.yaml}
+  '';
 in
 {
   imports = [];
@@ -91,15 +100,6 @@ in
     };
     environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };
-
-  # Script to apply registry manifests after Secret is created
-  applyRegistryManifests = pkgs.writeShellScript "apply-registry-manifests" ''
-    set -e
-
-    ${waitForK8s}
-
-    ${pkgs.kubectl}/bin/kubectl apply -f ${./registry.yaml}
-  '';
 
   # Apply registry manifests (IngressRoute, Service, TLSStore) after Secret is updated
   systemd.services.apply-registry-manifests = {
