@@ -31,7 +31,7 @@ in
       cp ${registryCert}/registry.home.crt ${certDir}/registry.home.crt
       cp ${registryCert}/registry.home.key ${certDir}/registry.home.key
       chmod 644 ${certDir}/registry.home.crt
-      chmod 600 ${certDir}/registry.home.key
+      chmod 644 ${certDir}/registry.home.key
     '';
   };
 
