@@ -24,6 +24,10 @@
     extraFlags = "--data-dir=/home/k3s/data";
   };
 
+  # Ensure k3s waits for registry certificate
+  systemd.services.k3s.after = [ "setup-registry-cert.service" ];
+  systemd.services.k3s.wants = [ "setup-registry-cert.service" ];
+
   # Set KUBECONFIG for kubectl access
   environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
 
@@ -36,22 +40,21 @@
   environment.etc."rancher/k3s/registries.yaml" = {
     text = ''
       mirrors:
-        registry.home:5000:
+        registry.home:
           endpoint:
-            - http://registry.home:5000
+            - https://registry.home
       configs:
-        registry.home:5000:
+        registry.home:
           tls:
-            insecure_skip_verify: true
+            ca_file: /var/lib/registry-certs/registry.home.crt
     '';
   };
 
   networking.hosts = {
-    "127.0.0.1" = [ "k3s.local" "registry.home" ];
+    "127.0.0.1" = [ "k3s.local" ];
   };
 
   networking.firewall.allowedTCPPorts = [
     6443
-    5000
   ];
 }
