@@ -2,7 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    ollama # Запуск локальных моделей (Llama, Mistral, и др.)
-    lmstudio # GUI для локальных моделей
+    ollama # Run local models (Llama, Mistral, etc.)
+    lmstudio # GUI for local models
   ];
 }

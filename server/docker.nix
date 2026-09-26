@@ -46,7 +46,7 @@
     };
   };
 
-  # Периодические задачи очистки Docker
+  # Periodic Docker cleanup tasks
   systemd.services.docker-cleanup-cache = {
     description = "Clean Docker build cache";
     serviceConfig = {
