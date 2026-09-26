@@ -54,6 +54,9 @@ let
     CERT=$(cat ${certDir}/registry.home.crt | base64 -w0)
     KEY=$(cat ${certDir}/registry.home.key | base64 -w0)
 
+    # Delete existing secret to force regeneration
+    ${pkgs.kubectl}/bin/kubectl delete secret registry-home-tls -n kube-system --ignore-not-found=true
+
     # Create temporary Secret manifest
     cat > /tmp/registry-secret.yaml << EOF
 apiVersion: v1
@@ -67,7 +70,7 @@ data:
   tls.key: $KEY
 EOF
 
-    # Apply the secret (recreate if exists)
+    # Apply the secret
     ${pkgs.kubectl}/bin/kubectl apply -f /tmp/registry-secret.yaml
 
     # Clean up
