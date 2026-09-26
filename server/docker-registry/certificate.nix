@@ -28,7 +28,7 @@ in
     description = "Setup self-signed certificate for Docker registry";
     before = [ "nginx.service" ];
     wantedBy = [ "multi-user.target" ];
-    type = "oneshot";
+    serviceConfig.Type = "oneshot";
     script = ''
       cp ${registryCert}/registry.home.crt ${certFile}
       cp ${registryCert}/registry.home.key ${keyFile}
