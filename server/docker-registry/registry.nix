@@ -8,6 +8,10 @@
     storagePath = "/home/docker-registry/data";
 
     extraConfig = {
+      http = {
+        addr = "0.0.0.0:5000";
+      };
+
       delete.enabled = true;
       storage.redirect.disable = false;
 
