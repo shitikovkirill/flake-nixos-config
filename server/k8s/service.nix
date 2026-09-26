@@ -19,9 +19,10 @@
     extraFlags = "--data-dir=/home/k3s/data";
   };
 
-  # Ensure k3s waits for registry certificate
-  systemd.services.k3s.after = [ "setup-registry-cert.service" ];
+  # Ensure k3s waits for network and registry certificate
+  systemd.services.k3s.after = [ "network-online.target" "setup-registry-cert.service" ];
   systemd.services.k3s.wants = [ "setup-registry-cert.service" ];
+  systemd.services.k3s.requires = [ "network-online.target" ];
 
   # Setup k3s directories
   systemd.tmpfiles.rules = [
