@@ -1,10 +1,5 @@
 { config, ... }:
 
-let
-  certDir = "/var/lib/registry-certs";
-  certFile = "${certDir}/registry.home.crt";
-  keyFile = "${certDir}/registry.home.key";
-in
 {
   services.nginx = {
     enable = true;
@@ -17,8 +12,8 @@ in
         { addr = "0.0.0.0"; port = 443; ssl = true; }
       ];
 
-      sslCertificate = certFile;
-      sslCertificateKey = keyFile;
+      sslCertificate = "/var/lib/registry-certs/registry.home.crt";
+      sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
 
       locations."/" = {
         proxyPass = "http://127.0.0.1:5000";
