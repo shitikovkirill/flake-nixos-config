@@ -4,7 +4,7 @@ set -e
 CERT_DIR="${CERT_DIR:-/var/lib/registry-certs}"
 
 # Wait for Kubernetes API server
-"$(dirname "$0")/wait-for-k8s.sh"
+"${WAIT_FOR_K8S_SCRIPT:?WAIT_FOR_K8S_SCRIPT not set}"
 
 CERT=$(cat "$CERT_DIR/registry.home.crt" | base64 -w0)
 KEY=$(cat "$CERT_DIR/registry.home.key" | base64 -w0)

@@ -31,6 +31,7 @@ lib.mkIf (config.services.k3s.enable or false) {
     environment = {
       KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
       CERT_DIR = certDir;
+      WAIT_FOR_K8S_SCRIPT = "${waitForK8s}/bin/wait-for-k8s";
     };
   };
 
@@ -49,6 +50,7 @@ lib.mkIf (config.services.k3s.enable or false) {
     environment = {
       KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
       REGISTRY_MANIFEST_PATH = "${./registry.yaml}";
+      WAIT_FOR_K8S_SCRIPT = "${waitForK8s}/bin/wait-for-k8s";
     };
   };
 }
