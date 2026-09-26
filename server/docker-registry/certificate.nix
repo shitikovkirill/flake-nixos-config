@@ -77,6 +77,20 @@ in
     environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };
 
+  # Apply registry manifests (IngressRoute, Service, TLSStore) after Secret is updated
+  systemd.services.apply-registry-manifests = {
+    description = "Apply Traefik registry manifests";
+    after = [ "update-traefik-registry-secret.service" ];
+    wants = [ "update-traefik-registry-secret.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.kubectl}/bin/kubectl apply -f ${./registry.yaml}";
+      RemainAfterExit = true;
+    };
+    environment.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+  };
+
   # Trust the self-signed certificate
   security.pki.certificateFiles = [ "${registryCert}/registry.home.crt" ];
 }
