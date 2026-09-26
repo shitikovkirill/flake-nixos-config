@@ -5,11 +5,29 @@ let
     buildInputs = [ pkgs.openssl ];
   } ''
     mkdir -p $out
+
+    # Create a config file for proper SAN support
+    cat > /tmp/cert.conf << 'CONF'
+    [req]
+    distinguished_name = req_distinguished_name
+    req_extensions = v3_req
+    prompt = no
+
+    [req_distinguished_name]
+    C = RU
+    ST = Moscow
+    L = Moscow
+    O = Home
+    CN = registry.home
+
+    [v3_req]
+    subjectAltName = DNS:registry.home
+    CONF
+
     openssl req -x509 -newkey rsa:4096 \
       -keyout $out/registry.home.key -out $out/registry.home.crt \
-      -days 365 -nodes \
-      -subj "/C=RU/ST=Moscow/L=Moscow/O=Home/CN=registry.home" \
-      -addext "subjectAltName=DNS:registry.home"
+      -days 365 -nodes -config /tmp/cert.conf \
+      -extensions v3_req
   '';
 
   certDir = "/var/lib/registry-certs";
