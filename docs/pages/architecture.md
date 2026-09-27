@@ -12,6 +12,8 @@ flake-nixos-config is a declarative NixOS system configuration that combines:
 
 ```
 flake-nixos-config/
+├── hosts/                       # Per-machine, per-role configs
+│   └── asus-n56vj/               # hardware-configuration.nix + common/desktop/server.nix
 ├── desktop/                    # UI applications
 │   ├── environments/           # xfce, plasma5, plasma6
 │   ├── apps/                   # browser, games, media, social, torrents
@@ -35,6 +37,20 @@ flake-nixos-config/
 ├── flake.nix                   # Flake configuration
 └── README.md                   # Root documentation
 ```
+
+### Hosts and role variants
+
+`hosts/asus-n56vj/` holds everything specific to one physical machine:
+`hardware-configuration.nix` (disks, kernel modules — generated once by
+`nixos-generate-config`, not hand-edited), `common.nix` (bootloader,
+networking, locale, shared by every role), `desktop.nix`, and `server.nix`.
+
+`flake.nix` exposes two `nixosConfigurations` for this same hardware —
+`asus-n56vj-desktop` (imports `./desktop`, `hosts/asus-n56vj/desktop.nix`)
+and `asus-n56vj-server` (imports `./server`, `hosts/asus-n56vj/server.nix`)
+— so the machine can be rebuilt as a GUI workstation or a headless
+docker/k3s box from the same repo, without either role's modules being
+active in the other.
 
 ## Component Architecture
 

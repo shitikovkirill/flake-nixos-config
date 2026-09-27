@@ -200,7 +200,7 @@ the system flake instead of writing a second derivation that duplicates
   };
 
   outputs = { self, nixpkgs, home-manager, docs, ... }@inputs: {
-    nixosConfigurations.asus-n56vj = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.asus-n56vj-server = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; }; # makes `inputs` available to modules
       modules = [ /* ... */ ];
@@ -245,7 +245,7 @@ sources change — no manual copy, no stale files, and only one place
 ### 3. Apply and test
 
 ```bash
-sudo nixos-rebuild switch --flake .#asus-n56vj --impure
+sudo nixos-rebuild switch --flake .#asus-n56vj-server
 curl -u myuser -I https://docs.home/
 ```
 

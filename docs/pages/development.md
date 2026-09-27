@@ -80,12 +80,14 @@ nix develop .#nix
 
 4. **Build and test**
    ```bash
-   sudo nixos-rebuild build --flake .#asus-n56vj --impure
+   sudo nixos-rebuild build --flake .#asus-n56vj-desktop
+   # or .#asus-n56vj-server
    ```
 
 5. **Apply changes**
    ```bash
-   sudo nixos-rebuild switch --flake .#asus-n56vj --impure
+   sudo nixos-rebuild switch --flake .#asus-n56vj-desktop
+   # or .#asus-n56vj-server
    ```
 
 ## Development Tools
@@ -142,7 +144,7 @@ nix flake check
 ```bash
 # Clean build
 nix-store --gc
-sudo nixos-rebuild build --flake .#asus-n56vj --impure
+sudo nixos-rebuild build --flake .#asus-n56vj-desktop
 ```
 
 ### Environment issues

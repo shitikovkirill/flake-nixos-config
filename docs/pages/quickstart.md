@@ -11,10 +11,15 @@ echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
 
 ## Building the System
 
-Build the NixOS configuration:
+This machine has two host profiles sharing the same hardware
+(`hosts/asus-n56vj/`): `asus-n56vj-desktop` (GUI workstation) and
+`asus-n56vj-server` (headless, docker/k3s services). Build whichever one
+this machine should currently run as:
 
 ```bash
-sudo nixos-rebuild build --flake .#asus-n56vj --impure
+sudo nixos-rebuild build --flake .#asus-n56vj-desktop
+# or
+sudo nixos-rebuild build --flake .#asus-n56vj-server
 ```
 
 ## Applying Changes
@@ -22,7 +27,9 @@ sudo nixos-rebuild build --flake .#asus-n56vj --impure
 Apply the system configuration:
 
 ```bash
-sudo nixos-rebuild switch --flake .#asus-n56vj --impure
+sudo nixos-rebuild switch --flake .#asus-n56vj-desktop
+# or
+sudo nixos-rebuild switch --flake .#asus-n56vj-server
 ```
 
 ## Next Steps
