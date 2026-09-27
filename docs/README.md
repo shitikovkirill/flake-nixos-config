@@ -1,51 +1,162 @@
-# Documentation
 
-Welcome to the flake-nixos-config documentation!
+# Building Documentation
 
-## Table of Contents
+This directory contains the Sphinx documentation for flake-nixos-config.
 
-### Getting Started
-- [Quick Start](./quickstart.md) - Setup and build instructions
+## Using Nix to Build
 
-### Services & Components
-- [Docker Registry](./docker-registry.md) - Self-hosted Docker registry with Traefik integration
+### Build with Nix (Recommended)
 
-### Project Structure
-```
-desktop/              - UI applications and desktop environments
-server/               - Server applications and utilities
-development/          - Development tools and environments
-system/               - System configuration
-docs/                 - Documentation (this folder)
+Build the complete documentation:
+
+```bash
+nix build .
 ```
 
-## Architecture Overview
+The compiled HTML documentation will be available in the `result/` directory.
 
-**Desktop Applications**
-- XFCE, KDE Plasma 5/6 desktop environments
-- Browser, media, social media, games, torrent applications
+### Development Shell with Nix
 
-**Server Components**
-- Docker Registry with HTTPS support via Traefik
-- Kubernetes (k3s) integration
-- Docker daemon configuration
-- VPN and utility packages
+Enter a development environment with all necessary tools:
 
-**Development**
-- AI/ML tools (MCP)
-- Database tools
-- Python/Nix development environments
-- Git utilities
+```bash
+nix develop
+```
 
-## System Features
+Once inside the shell, you can use the Makefile commands:
 
-- ✅ NixOS declarative configuration using Flakes
-- ✅ Docker Registry with self-signed TLS certificates
-- ✅ Kubernetes (k3s) integration
-- ✅ Traefik reverse proxy for HTTPS
-- ✅ Development environment management
-- ✅ Modular, organized structure
+```bash
+cd docs
+make html        # Build HTML documentation
+make clean       # Clean build artifacts
+make pdf         # Build PDF documentation
+make epub        # Build ePub documentation
+```
 
-## Getting Help
+## Local Build (Without Nix)
 
-For detailed information on specific components, see the relevant documentation in this folder.
+### Prerequisites
+
+Install Sphinx and required dependencies:
+
+```bash
+pip install sphinx sphinx-rtd-theme myst-parser furo
+```
+
+### Build Commands
+
+```bash
+cd docs
+make html
+```
+
+The built documentation will be in `_build/html/`.
+
+## Documentation Structure
+
+```
+docs/
+├── conf.py              # Sphinx configuration
+├── index.rst            # Master document
+├── Makefile             # Build automation
+├── flake.nix            # Nix flake for reproducible builds
+├── pages/               # Documentation sources
+│   ├── quickstart.md    # Getting started guide
+│   ├── architecture.md  # System architecture
+│   ├── development.md   # Development setup
+│   ├── docker-registry.md  # Docker registry guide
+│   └── README.md        # Documentation overview
+└── _build/              # Build artifacts (generated)
+    └── html/            # Compiled HTML
+```
+
+## Configuration
+
+### Theme
+
+The documentation uses the **Furo** theme with dark mode support.
+
+### Markdown Support
+
+MyST parser is configured to support:
+- Colon fences (code blocks with :::)
+- Task lists
+- Definition lists
+
+### Supported Formats
+
+- HTML (default)
+- PDF
+- ePub
+- Plain text
+- man pages
+
+## Viewing Documentation
+
+After building, open the documentation in your browser:
+
+```bash
+# If built with Nix:
+open result/index.html
+
+# If built locally:
+open _build/html/index.html
+```
+
+## Adding New Pages
+
+1. Create a `.md` file in `pages/`
+2. Add it to the toctree in `index.rst`:
+
+```rst
+.. toctree::
+   :maxdepth: 2
+   :caption: Section Name
+
+   pages/your-page
+```
+
+3. Rebuild the documentation
+
+## Troubleshooting
+
+### Clean Build
+
+Remove all build artifacts:
+
+```bash
+make clean
+```
+
+Then rebuild:
+
+```bash
+make html
+```
+
+### Flake Lock Issues
+
+If you get flake lock issues:
+
+```bash
+nix flake update
+```
+
+### Module Not Found
+
+Ensure you're in the development shell:
+
+```bash
+nix develop
+make html
+```
+
+## Dependencies
+
+- Python 3.13+
+- Sphinx 9.1+
+- MyST Parser 5.0+
+- Furo theme
+- Sphinx RTD Theme
+
+All dependencies are automatically managed by Nix.
