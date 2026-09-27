@@ -28,4 +28,4 @@ sudo nixos-rebuild switch --flake .#asus-n56vj --impure
 ## Next Steps
 
 - See [Docker Registry](./docker-registry.md) for registry setup
-- See project README for complete documentation
+- See [Architecture](./architecture.md) for a system overview
