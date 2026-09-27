@@ -11,7 +11,7 @@ All servers below are defined in a single `mcpServers` attribute set in
 there's no per-server enable/disable flag. The corresponding packages are
 installed via `environment.systemPackages`, and the merged config is
 written to `~/.config/mcp/config.json` for every user declared in
-`services.systemUsers.users` (see [Architecture](./architecture.md)).
+`services.systemUsers.users` (see [Architecture](../architecture.md)).
 
 ### Core
 

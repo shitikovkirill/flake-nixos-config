@@ -56,18 +56,22 @@ The built documentation will be in `_build/html/`.
 
 ```
 docs/
-├── conf.py              # Sphinx configuration
-├── index.rst            # Master document
-├── Makefile             # Build automation
-├── flake.nix            # Nix flake for reproducible builds
-├── pages/               # Documentation sources
-│   ├── quickstart.md    # Getting started guide
-│   ├── architecture.md  # System architecture
-│   ├── development.md   # Development setup
-│   ├── docker-registry.md  # Docker registry guide
-│   └── README.md        # Documentation overview
-└── _build/              # Build artifacts (generated)
-    └── html/            # Compiled HTML
+├── conf.py                          # Sphinx configuration
+├── index.rst                        # Master document
+├── Makefile                         # Build automation
+├── flake.nix                        # Nix flake for reproducible builds
+├── pages/                           # Documentation sources — top-level
+│   │                                # subfolders mirror the repo's own
+│   │                                # top-level folders (server/, development/)
+│   ├── quickstart.md                # Getting started guide
+│   ├── architecture.md              # System architecture overview
+│   ├── server/
+│   │   └── docker-registry.md       # mirrors server/docker-registry/
+│   └── development/
+│       ├── development.md           # mirrors development/
+│       └── mcp-servers.md           # mirrors development/ai/mcp/
+└── _build/                          # Build artifacts (generated)
+    └── html/                        # Compiled HTML
 ```
 
 ## Configuration

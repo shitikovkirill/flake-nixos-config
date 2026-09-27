@@ -17,15 +17,15 @@ Kubernetes (k3s), and comprehensive development tools.
    :maxdepth: 2
    :caption: Services & Components
 
-   pages/docker-registry
+   pages/server/docker-registry
    pages/architecture
 
 .. toctree::
    :maxdepth: 2
    :caption: Development
 
-   pages/development
-   pages/mcp-servers
+   pages/development/development
+   pages/development/mcp-servers
 
 Project Features
 ================
@@ -63,7 +63,7 @@ Quick Links
 ===========
 
 - :doc:`pages/quickstart` - Get up and running
-- :doc:`pages/docker-registry` - Docker Registry setup and usage
+- :doc:`pages/server/docker-registry` - Docker Registry setup and usage
 - :doc:`pages/architecture` - System architecture overview
 
 Indices and tables
