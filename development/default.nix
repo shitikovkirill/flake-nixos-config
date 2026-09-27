@@ -14,6 +14,7 @@
     ./h
     ./ide.nix
     ./ai
+    # ./vs_code # VS Code Remote-SSH server support (nixos-vscode-server)
     # ./electronics.nix
     # ./tools
     # ./python
