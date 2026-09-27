@@ -37,6 +37,20 @@ The development environment includes tools for:
 - Git utilities and hooks
 - Version control helpers
 
+### VS Code Remote Server
+
+`development/vs_code/` provides VS Code Remote-SSH server support via the
+[`nixos-vscode-server`](https://github.com/nix-community/nixos-vscode-server)
+community module. It's disabled by default — uncomment `./vs_code` in
+`development/default.nix` to enable it on a given host.
+
+Once enabled, if the remote server needs a manual restart/fix:
+
+```bash
+systemctl --user enable auto-fix-vscode-server.service
+systemctl --user start auto-fix-vscode-server.service
+```
+
 ## Setting Up Development Environment
 
 ### Using Nix Flakes
