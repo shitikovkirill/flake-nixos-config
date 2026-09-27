@@ -5,6 +5,9 @@
   ...
 }:
 
+let
+  user = config.custom.devServerConfig.user;
+in
 {
   environment.systemPackages = with pkgs; [
     direnv
@@ -34,7 +37,7 @@
   '';
   environment.pathsToLink = [ "/share/nix-direnv" ];
 
-  home-manager.users.kirill = {
+  home-manager.users.${user} = {
     home = {
       file.".direnvrc".source = ./direnvrc;
     };

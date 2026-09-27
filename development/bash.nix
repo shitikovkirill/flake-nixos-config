@@ -5,8 +5,11 @@
   ...
 }:
 
+let
+  user = config.custom.devServerConfig.user;
+in
 {
-  home-manager.users.kirill = {
+  home-manager.users.${user} = {
     programs.bash = {
       enableCompletion = true;
       historySize = 10000;

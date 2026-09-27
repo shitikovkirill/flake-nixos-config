@@ -24,9 +24,16 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
+          # Single source of truth for the primary user this config is built around.
+          { custom.devServerConfig.user = "kirill"; }
           /etc/nixos/configuration.nix
           home-manager.nixosModules.home-manager
-          { home-manager.users.kirill.home.stateVersion = "26.05"; }
+          (
+            { config, ... }:
+            {
+              home-manager.users.${config.custom.devServerConfig.user}.home.stateVersion = "26.05";
+            }
+          )
           ./development
           ./server/pkgs
           ./system

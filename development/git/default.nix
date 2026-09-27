@@ -1,5 +1,8 @@
 { config, pkgs, ... }:
 
+let
+  user = config.custom.devServerConfig.user;
+in
 {
   environment.systemPackages = with pkgs; [
     gitg
@@ -8,7 +11,7 @@
     pre-commit
   ];
 
-  home-manager.users.kirill = {
+  home-manager.users.${user} = {
     home = {
       file.".gitignore".source = ./gitignore;
     };

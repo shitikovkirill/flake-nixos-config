@@ -1,5 +1,8 @@
 { config, ... }:
 
+let
+  user = config.custom.devServerConfig.user;
+in
 {
   # Docker user
   users.users.docker = {
@@ -31,5 +34,5 @@
   ];
 
   # Add user to docker group
-  users.users.kirill.extraGroups = [ "docker" ];
+  users.users.${user}.extraGroups = [ "docker" ];
 }

@@ -55,6 +55,8 @@ let
       ];
     };
   };
+
+  user = config.custom.devServerConfig.user;
 in
 {
   environment.systemPackages = with pkgs; [
@@ -81,7 +83,7 @@ in
     pyright
   ];
 
-  home-manager.users.kirill = {
+  home-manager.users.${user} = {
     home.file.".config/mcp/config.json".text = builtins.toJSON {
       inherit mcpServers;
     };
