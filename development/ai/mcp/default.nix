@@ -6,7 +6,7 @@
 }:
 
 let
-  # Define all MCP servers configurations
+  # See docs/pages/mcp-servers.md for what each server does and how to add/remove one.
   mcpServers = {
     # Core
     memory = {

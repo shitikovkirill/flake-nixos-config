@@ -25,6 +25,7 @@ Kubernetes (k3s), and comprehensive development tools.
    :caption: Development
 
    pages/development
+   pages/mcp-servers
 
 Project Features
 ================
