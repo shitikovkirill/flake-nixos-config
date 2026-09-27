@@ -23,6 +23,6 @@ mkShell rec {
     inherit description;
     license = licenses.lgpl3;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ shitikovkirill ];
+    maintainers = with maintainers; [ shitikov ];
   };
 }
