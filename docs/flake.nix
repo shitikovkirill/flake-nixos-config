@@ -45,7 +45,14 @@
 
           installPhase = ''
             mkdir -p $out
-            cp -r _build/html/* $out/
+            for file in _build/html/*; do
+              if [ -d "$file" ]; then
+                cp -r "$file" $out/
+              else
+                cp "$file" $out/
+              fi
+            done
+            [ -f _build/html/.buildinfo ] && cp _build/html/.buildinfo $out/ || true
           '';
         };
       }

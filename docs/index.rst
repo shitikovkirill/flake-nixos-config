@@ -11,20 +11,20 @@ Kubernetes (k3s), and comprehensive development tools.
    :maxdepth: 2
    :caption: Getting Started
 
-   quickstart
+   pages/quickstart
 
 .. toctree::
    :maxdepth: 2
    :caption: Services & Components
 
-   docker-registry
-   architecture
+   pages/docker-registry
+   pages/architecture
 
 .. toctree::
    :maxdepth: 2
    :caption: Development
 
-   development
+   pages/development
 
 Project Features
 ================
@@ -61,9 +61,9 @@ Project Structure
 Quick Links
 ===========
 
-- :doc:`quickstart` - Get up and running
-- :doc:`docker-registry` - Docker Registry setup and usage
-- :doc:`architecture` - System architecture overview
+- :doc:`pages/quickstart` - Get up and running
+- :doc:`pages/docker-registry` - Docker Registry setup and usage
+- :doc:`pages/architecture` - System architecture overview
 
 Indices and tables
 ==================
