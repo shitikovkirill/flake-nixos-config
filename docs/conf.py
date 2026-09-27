@@ -34,7 +34,7 @@ source_suffix = {
 master_doc = 'index'
 
 # List of patterns, relative to source directory, that should be ignored
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.git']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.git', 'README.md']
 
 # Pygments style
 pygments_style = 'sphinx'
