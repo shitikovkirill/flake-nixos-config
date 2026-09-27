@@ -1,7 +1,7 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  user = config.custom.devServerConfig.user;
+  userNames = map (u: u.name) config.services.systemUsers.users;
 in
 {
   environment.systemPackages = with pkgs; [
@@ -11,7 +11,7 @@ in
     pre-commit
   ];
 
-  home-manager.users.${user} = {
+  home-manager.users = lib.genAttrs userNames (name: {
     home = {
       file.".gitignore".source = ./gitignore;
     };
@@ -72,7 +72,7 @@ in
         };
       };
     };
-  };
+  });
 
   programs.zsh = {
     ohMyZsh = {

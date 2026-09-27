@@ -3,6 +3,7 @@
   imports = [
     ./dev-server-config.nix
     ./users
+    ./data
     ./aliases.nix
   ];
 }

@@ -1,16 +1,18 @@
-{ config, ... }:
+{ config, lib, ... }:
 
 let
-  user = config.custom.devServerConfig.user;
+  userNames = map (u: u.name) config.services.systemUsers.users;
 in
 {
-  # Docker user
-  users.users.docker = {
-    isSystemUser = true;
-    group = "docker";
-    home = "/home/docker";
-    createHome = true;
-  };
+  # Docker user, plus "docker" group for every declared user
+  users.users = {
+    docker = {
+      isSystemUser = true;
+      group = "docker";
+      home = "/home/docker";
+      createHome = true;
+    };
+  } // lib.genAttrs userNames (name: { extraGroups = [ "docker" ]; });
 
   users.groups.docker = {};
 
@@ -32,7 +34,4 @@ in
     "d /home/docker 0755 docker docker -"
     "d /home/docker/data 0755 docker docker -"
   ];
-
-  # Add user to docker group
-  users.users.${user}.extraGroups = [ "docker" ];
 }

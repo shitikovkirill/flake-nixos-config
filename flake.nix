@@ -24,14 +24,16 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
-          # Single source of truth for the primary user this config is built around.
-          { custom.devServerConfig.user = "kirill"; }
           /etc/nixos/configuration.nix
           home-manager.nixosModules.home-manager
           (
-            { config, ... }:
+            { config, lib, ... }:
             {
-              home-manager.users.${config.custom.devServerConfig.user}.home.stateVersion = "26.05";
+              home-manager.users = lib.genAttrs (map (u: u.name) config.services.systemUsers.users) (
+                name: {
+                  home.stateVersion = "26.05";
+                }
+              );
             }
           )
           ./development

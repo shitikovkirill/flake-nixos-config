@@ -6,7 +6,7 @@
 }:
 
 let
-  user = config.custom.devServerConfig.user;
+  userNames = map (u: u.name) config.services.systemUsers.users;
 in
 {
   environment.systemPackages = with pkgs; [
@@ -37,9 +37,9 @@ in
   '';
   environment.pathsToLink = [ "/share/nix-direnv" ];
 
-  home-manager.users.${user} = {
+  home-manager.users = lib.genAttrs userNames (name: {
     home = {
       file.".direnvrc".source = ./direnvrc;
     };
-  };
+  });
 }

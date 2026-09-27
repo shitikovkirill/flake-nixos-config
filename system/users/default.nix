@@ -72,8 +72,8 @@ in
         map (u: {
           name = u.name;
           value = {
-            isNormalUser = true;
-            description = u.description;
+            isNormalUser = mkDefault true;
+            description = mkDefault u.description;
             extraGroups = u.groups;
             openssh.authorizedKeys.keys = u.keys;
           };

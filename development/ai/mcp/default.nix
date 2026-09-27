@@ -56,7 +56,7 @@ let
     };
   };
 
-  user = config.custom.devServerConfig.user;
+  userNames = map (u: u.name) config.services.systemUsers.users;
 in
 {
   environment.systemPackages = with pkgs; [
@@ -83,9 +83,9 @@ in
     pyright
   ];
 
-  home-manager.users.${user} = {
+  home-manager.users = lib.genAttrs userNames (name: {
     home.file.".config/mcp/config.json".text = builtins.toJSON {
       inherit mcpServers;
     };
-  };
+  });
 }
