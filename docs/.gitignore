@@ -1,0 +1,6 @@
+_build/
+result
+flake.lock
+*.pyc
+__pycache__/
+.pytest_cache/
