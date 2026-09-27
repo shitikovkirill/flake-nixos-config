@@ -160,3 +160,100 @@ make html
 - Sphinx RTD Theme
 
 All dependencies are automatically managed by Nix.
+
+## Password-Protected Nginx Page on NixOS
+
+This is a general recipe for putting an `nginx` site behind HTTP Basic Auth
+on a NixOS server — for example if you want to publish this documentation's
+`result/` output but keep it private.
+
+### 1. Generate a htpasswd file
+
+Generate the credentials file outside the Nix store (e.g. in `/var/lib/nginx-auth/`)
+so the password hash is not world-readable via `/nix/store`:
+
+```bash
+sudo mkdir -p /var/lib/nginx-auth
+nix-shell -p apacheHttpd --run \
+  "sudo htpasswd -c -B /var/lib/nginx-auth/.htpasswd myuser"
+```
+
+Drop `-c` when adding additional users to an existing file.
+
+### 2. Build the docs as a derivation, then reference it
+
+Build the site as its own Nix derivation instead of relying on a path that
+someone has to remember to `nix build`/copy by hand:
+
+```nix
+# docs-derivation.nix
+{ pkgs ? import <nixpkgs> { } }:
+with pkgs;
+
+stdenv.mkDerivation {
+  name = "auth-documentation";
+  src = ./docs;
+
+  buildPhase = ''
+    make html
+  '';
+
+  installPhase = ''
+    mkdir -p $out/html
+    cp -r _build/html/. $out/html
+  '';
+
+  buildInputs = with python312Packages; [ sphinx myst-parser furo sphinx-rtd-theme ];
+}
+```
+
+Then reference that derivation directly as `root` — Nix store paths are
+world-readable, so nginx can serve straight out of `/nix/store` with no
+extra copy step, and the content is always exactly what was last built:
+
+```nix
+{ config, pkgs, ... }:
+
+let
+  docsSite = pkgs.callPackage ./docs-derivation.nix { };
+in
+{
+  services.nginx.virtualHosts."docs.home" = {
+    forceSSL = true;
+    sslCertificate = "/var/lib/registry-certs/registry.home.crt"; # or your own cert
+    sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
+
+    locations."/" = {
+      root = "${docsSite}/html";
+      extraConfig = ''
+        auth_basic "Restricted";
+        auth_basic_user_file /var/lib/nginx-auth/.htpasswd;
+      '';
+    };
+  };
+}
+```
+
+Rebuilding the system (`nixos-rebuild switch`) re-evaluates `docsSite` and
+points nginx at the new store path automatically whenever the docs sources
+change — no manual copy, no stale files.
+
+### 3. Apply and test
+
+```bash
+sudo nixos-rebuild switch --flake .#asus-n56vj --impure
+curl -u myuser -I https://docs.home/
+```
+
+A `401 Unauthorized` without credentials and `200 OK` with the correct
+username/password confirms Basic Auth is working.
+
+### Notes
+
+- `htpasswd -B` uses bcrypt; nginx on NixOS supports bcrypt, MD5 (`apr1`),
+  and SHA1 hashes in the auth file.
+- Keep the `.htpasswd` file outside of any Nix-tracked source directory —
+  files copied into the store via `pkgs.writeText`/`./path` become world
+  readable at `/nix/store/...`, defeating the point of the password.
+- To protect only part of a site, scope `auth_basic`/`auth_basic_user_file`
+  to a specific `locations."/subpath"` block instead of `"/"`.
