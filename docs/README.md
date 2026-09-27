@@ -180,43 +180,45 @@ nix-shell -p apacheHttpd --run \
 
 Drop `-c` when adding additional users to an existing file.
 
-### 2. Build the docs as a derivation, then reference it
+### 2. Reference the docs flake instead of a standalone derivation
 
-Build the site as its own Nix derivation instead of relying on a path that
-someone has to remember to `nix build`/copy by hand:
+`docs/flake.nix` already builds this exact site as `packages.x86_64-linux.default`,
+with its Sphinx dependencies declared once. Add `docs/` as a flake input of
+the system flake instead of writing a second derivation that duplicates
+`sphinx`/`myst-parser`/`furo`/... in a separate `.nix` file:
 
 ```nix
-# docs-derivation.nix
-{ pkgs ? import <nixpkgs> { } }:
-with pkgs;
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    home-manager = { ... };
+    docs = {
+      url = "path:./docs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-stdenv.mkDerivation {
-  name = "auth-documentation";
-  src = ./docs;
-
-  buildPhase = ''
-    make html
-  '';
-
-  installPhase = ''
-    mkdir -p $out/html
-    cp -r _build/html/. $out/html
-  '';
-
-  buildInputs = with python312Packages; [ sphinx myst-parser furo sphinx-rtd-theme ];
+  outputs = { self, nixpkgs, home-manager, docs, ... }@inputs: {
+    nixosConfigurations.asus-n56vj = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      specialArgs = { inherit inputs; }; # makes `inputs` available to modules
+      modules = [ /* ... */ ];
+    };
+  };
 }
 ```
 
-Then reference that derivation directly as `root` — Nix store paths are
-world-readable, so nginx can serve straight out of `/nix/store` with no
-extra copy step, and the content is always exactly what was last built:
+`inputs.nixpkgs.follows = "nixpkgs"` keeps the docs flake pinned to the same
+nixpkgs as the rest of the system instead of fetching its own copy.
+
+Then in the nginx module, reference `inputs.docs.packages.${pkgs.system}.default`
+directly as `root`. It's a Nix store path, which is world-readable, so nginx
+can serve it with no extra copy step, and the content is always exactly what
+`docs/flake.nix` last built:
 
 ```nix
-{ config, pkgs, ... }:
-
-let
-  docsSite = pkgs.callPackage ./docs-derivation.nix { };
-in
+{ config, pkgs, inputs, ... }:
 {
   services.nginx.virtualHosts."docs.home" = {
     forceSSL = true;
@@ -224,7 +226,7 @@ in
     sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
 
     locations."/" = {
-      root = "${docsSite}/html";
+      root = inputs.docs.packages.${pkgs.system}.default;
       extraConfig = ''
         auth_basic "Restricted";
         auth_basic_user_file /var/lib/nginx-auth/.htpasswd;
@@ -234,9 +236,11 @@ in
 }
 ```
 
-Rebuilding the system (`nixos-rebuild switch`) re-evaluates `docsSite` and
-points nginx at the new store path automatically whenever the docs sources
-change — no manual copy, no stale files.
+Rebuilding the system (`nixos-rebuild switch`) re-evaluates the `docs` input
+and points nginx at the new store path automatically whenever the docs
+sources change — no manual copy, no stale files, and only one place
+(`docs/flake.nix`) declares the build's dependencies.
+
 
 ### 3. Apply and test
 
