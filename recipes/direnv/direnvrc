@@ -1,0 +1,48 @@
+if [ -f $HOME/.nix-direnv/direnvrc ]; then
+  source $HOME/.nix-direnv/direnvrc
+fi
+
+if [ -f /run/current-system/sw/share/nix-direnv/direnvrc ]; then
+  source /run/current-system/sw/share/nix-direnv/direnvrc
+fi
+
+nix-profile() {
+  local profile=$PWD/.direnv/nix-profile
+  mkdir -p .direnv
+
+  rm -f "$profile"
+  nix-build --out-link "$profile" profile.nix
+  watch_file profile.nix
+
+  #source "$profile/etc/profile.d/nix.sh"
+  load_prefix "$profile"
+}
+
+# Usage: layout golang
+#
+# Sets up environment for a Go project using the alternative gb build tool. Also
+# works with the official dep package.In addition to project executables on
+# PATH, this includes an exclusive, project- local GOPATH which enables many
+# tools like gocode and oracle to "just work".
+#
+# http://getgb.io/
+# https://golang.github.io/dep/
+#
+
+layout_golang() {
+  export GOPATH="$PWD/vendor:$PWD"
+  PATH_add "$PWD/vendor/bin"
+  PATH_add bin
+}
+
+layout_poetry() {
+  if [[ ! -f pyproject.toml ]]; then
+    log_error 'No pyproject.toml found. Use `poetry new` or `poetry init` to create one first.'
+    exit 2
+  fi
+
+  local VENV=$(dirname $(poetry run which python))
+  export VIRTUAL_ENV=$(echo "$VENV" | rev | cut -d'/' -f2- | rev)
+  export POETRY_ACTIVE=1
+  PATH_add "$VENV"
+}
