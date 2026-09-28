@@ -13,7 +13,7 @@
   }
   {
     name = "nixos";
-    description = "Old account";
+    description = "Nixos user";
     groups = [
       "wheel"
       "networkmanager"
