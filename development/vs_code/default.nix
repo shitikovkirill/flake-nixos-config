@@ -1,11 +1,13 @@
 {
-  # NOTE: this pulls the community module straight from the `master` branch
-  # tarball — unpinned, so it can break silently when upstream changes.
-  # Pin to a specific commit/tag before relying on this in a real config.
-  # See docs/pages/development.md for usage (auto-fix-vscode-server.service).
+  # Pinned to a specific commit (not `master`) so evaluation is pure and
+  # reproducible. Bump the rev/sha256 pair to pick up upstream updates:
+  #   nix-prefetch-url --unpack https://github.com/nix-community/nixos-vscode-server/archive/<rev>.tar.gz
+  # See docs/pages/development/development.md for usage (auto-fix-vscode-server.service).
   imports = [
-    (fetchTarball
-      "https://github.com/nix-community/nixos-vscode-server/tarball/master")
+    (fetchTarball {
+      url = "https://github.com/nix-community/nixos-vscode-server/archive/2f984dfbe7e5271b5c413d3e734374cc1306c921.tar.gz";
+      sha256 = "179gqv45mby7wxdmrjmk8qqfgxh9316x2l9dkcvmmqrp9i4w5qfs";
+    })
   ];
 
   services.vscode-server.enable = true;

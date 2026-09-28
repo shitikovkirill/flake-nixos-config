@@ -61,6 +61,9 @@
           ./hosts/asus-n56vj/common.nix
           ./hosts/asus-n56vj/server.nix
           ./server
+          # VS Code Remote-SSH server support — useful for a headless box
+          # you connect to remotely, not enabled by default in development/.
+          ./development/vs_code
         ];
       };
     };
