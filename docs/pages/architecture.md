@@ -91,36 +91,53 @@ every role on that machine), and one file per role (`desktop.nix`,
 `flake.nix` exposes one `nixosConfigurations` entry per host+role
 combination:
 
-| `nixosConfigurations` | Host | Role | Profiles |
-|---|---|---|---|
-| `asus-n56vj-desktop` | asus-n56vj | GUI workstation | `commonDevProfiles` (all seven dev profiles) |
-| `asus-n56vj-server` | asus-n56vj | Headless docker/k3s box | `commonDevProfiles` + `server-kube` + `server-plain` + VS Code server |
-| `asus-n580vn-desktop` | asus-n580vn | GUI workstation | `minimal-dev` + `server-plain` only |
+| `nixosConfigurations` | Host | Role | Dev profiles | Extra |
+|---|---|---|---|---|
+| `asus-n56vj-desktop` | asus-n56vj | GUI workstation | `hosts/asus-n56vj/profiles.nix` | — |
+| `asus-n56vj-server` | asus-n56vj | Headless docker/k3s box | `hosts/asus-n56vj/profiles.nix` | `server-kube` + `server-plain` + VS Code server |
+| `asus-n580vn-desktop` | asus-n580vn | GUI workstation | `hosts/asus-n580vn/profiles.nix` | `server-plain` |
 
 `asus-n56vj` runs two roles on the same hardware from the same repo,
-without either role's modules active in the other. `asus-n580vn` currently
-has one role and deliberately gets a slimmer profile set than the shared
-`commonDevProfiles` list — see "Profiles" below for why that's a supported,
-normal thing for a host to do.
+without either role's modules active in the other — both roles share the
+same `hosts/asus-n56vj/profiles.nix` toggle file, so switching role doesn't
+change which dev tools are active.
 
-### Profiles: opt-in package sets
+### Profiles: opt-in package sets, toggled per host
 
 `development/` and parts of `server/` hold raw tool definitions but are
 **not** imported by any shared module — a host only gets a given tool set by
-listing the matching `profiles/*.nix` file explicitly in its
-`nixosConfigurations` entry in `flake.nix`. This replaced an earlier design
-where `development/default.nix` unconditionally pulled in a fixed list of
-tools for every host.
+listing the matching `profiles/*.nix` file explicitly. This replaced an
+earlier design where `development/default.nix` unconditionally pulled in a
+fixed list of tools for every host, and a later `commonDevProfiles` list in
+`flake.nix` that force-included the same seven profiles everywhere.
 
-`flake.nix` defines `commonDevProfiles` (`minimal-dev`, `nix-dev`,
-`python-dev`, `go-dev`, `js-dev`, `db-dev`, `ide-tools`) as the set most
-hosts happen to want; `server-kube`/`server-plain` are added only where a
-host actually runs server workloads. `asus-n580vn-desktop` opts out of
-`commonDevProfiles` entirely and lists just `minimal-dev` + `server-plain` —
-a deliberately smaller footprint than the other two hosts. A new host is
-free to compose any subset from scratch; nothing under `development/` is
-implied by `sharedModules` beyond `./system` and `./server/pkgs` (VPN
-client, used regardless of role).
+Instead, each host has its own `hosts/<name>/profiles.nix` — one line per
+`profiles/*.nix` file that exists, all commented out except `minimal-dev`:
+
+```nix
+# hosts/asus-n56vj/profiles.nix
+{
+  imports = [
+    ../../profiles/minimal-dev.nix
+    # ../../profiles/nix-dev.nix
+    # ../../profiles/python-dev.nix
+    # ../../profiles/go-dev.nix
+    # ../../profiles/js-dev.nix
+    # ../../profiles/db-dev.nix
+    # ../../profiles/ide-tools.nix
+    # ../../profiles/electronics-dev.nix
+  ];
+}
+```
+
+Turning a profile on or off for one host is a one-line comment toggle in
+that host's own file — no `flake.nix` edit, no risk of accidentally
+changing another host's tool set. `server-kube`/`server-plain` are the
+exception: they're wired directly per role in `flake.nix` rather than
+through the per-host toggle file, since they define what a *role* is
+(headless docker/k3s box) rather than a personal tool preference — though
+`asus-n580vn-desktop` shows that's just a default, not a hard rule; it adds
+`server-plain` directly even though its role is "desktop".
 
 See [Development Environment](./development/development.md) for the full
 profile-by-profile breakdown.

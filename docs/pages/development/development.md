@@ -78,13 +78,35 @@ development/
 | `server-kube` | `server/k8s` + `server/docker-registry` | See [Kubernetes](../server/k8s.md) |
 | `server-plain` | `server/docker` | See [Docker](../server/docker.md) |
 
-`flake.nix` defines `commonDevProfiles` as the list most hosts share
-(`minimal-dev`, `nix-dev`, `python-dev`, `go-dev`, `js-dev`, `db-dev`,
-`ide-tools`); `server-kube`/`server-plain` are added only where a host
-actually runs server workloads. Not every host uses the same set —
-`asus-n580vn-desktop` deliberately lists just `minimal-dev` + `server-plain`
-instead of the full `commonDevProfiles`, on purpose, as a smaller-footprint
-host. See [Architecture → Hosts and role variants](../architecture.md#hosts-and-role-variants)
+### How a host picks its profiles
+
+Each host has its own `hosts/<name>/profiles.nix` listing every profile
+above as an import, all commented out except `minimal-dev`:
+
+```nix
+# hosts/asus-n56vj/profiles.nix
+{
+  imports = [
+    ../../profiles/minimal-dev.nix
+    # ../../profiles/nix-dev.nix
+    # ../../profiles/python-dev.nix
+    # ../../profiles/go-dev.nix
+    # ../../profiles/js-dev.nix
+    # ../../profiles/db-dev.nix
+    # ../../profiles/ide-tools.nix
+    # ../../profiles/electronics-dev.nix
+  ];
+}
+```
+
+To turn a profile on for a host, uncomment its line in that host's
+`profiles.nix` — nothing in `flake.nix` needs to change, and it can't
+accidentally affect another host. `server-kube`/`server-plain` are wired
+directly per role in `flake.nix` instead (they define what a *role* is —
+"headless docker/k3s box" — not a personal tool preference), though
+`asus-n580vn-desktop` adds `server-plain` directly even on its desktop
+role, showing that's a default rather than a hard rule. See
+[Architecture → Hosts and role variants](../architecture.md#hosts-and-role-variants)
 for the full per-host table.
 
 ## Databases
@@ -140,9 +162,10 @@ systemctl --user start auto-fix-vscode-server.service
    `../../common/tools/reset-jetbrains.nix` if it needs a trial-reset script.
 3. Add `profiles/<name>.nix` that imports the directory (and its `ide/` if
    any).
-4. Add `./profiles/<name>.nix` to the module list of whichever
-   `nixosConfigurations` entries in `flake.nix` should get it — or to
-   `commonDevProfiles` if every current host should.
+4. Add a commented `# ../../profiles/<name>.nix` line to every
+   `hosts/<name>/profiles.nix` (so it shows up as an available toggle
+   everywhere), and uncomment it on whichever host(s) should actually have
+   it active.
 5. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel
    --no-link` to check it evaluates before switching.
 

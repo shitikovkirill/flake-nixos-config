@@ -39,27 +39,18 @@
         ./server/pkgs
         ./system
       ];
-
-      # Every current host wants the same baseline dev tooling; hosts still
-      # list it explicitly (no implicit inclusion) so a future host can opt out.
-      commonDevProfiles = [
-        ./profiles/minimal-dev.nix
-        ./profiles/nix-dev.nix
-        ./profiles/python-dev.nix
-        ./profiles/go-dev.nix
-        ./profiles/js-dev.nix
-        ./profiles/db-dev.nix
-        ./profiles/ide-tools.nix
-      ];
     in
     {
       # Same physical laptop, two roles: pick one per `nixos-rebuild switch --flake .#<name>`.
+      # Dev-profile toggles live in hosts/<name>/profiles.nix — comment/uncomment
+      # lines there per host instead of editing this file.
       nixosConfigurations.asus-n56vj-desktop = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
-        modules = sharedModules ++ commonDevProfiles ++ [
+        modules = sharedModules ++ [
           ./hosts/asus-n56vj/hardware-configuration.nix
           ./hosts/asus-n56vj/common.nix
+          ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/desktop.nix
           ./desktop
         ];
@@ -68,9 +59,10 @@
       nixosConfigurations.asus-n56vj-server = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
-        modules = sharedModules ++ commonDevProfiles ++ [
+        modules = sharedModules ++ [
           ./hosts/asus-n56vj/hardware-configuration.nix
           ./hosts/asus-n56vj/common.nix
+          ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/server.nix
           ./profiles/server-kube.nix
           ./profiles/server-plain.nix
@@ -84,10 +76,10 @@
         inherit system;
         specialArgs = { inherit inputs; };
         modules = sharedModules ++ [
-          ./profiles/minimal-dev.nix
-          ./profiles/server-plain.nix
           ./hosts/asus-n580vn/hardware-configuration.nix
           ./hosts/asus-n580vn/common.nix
+          ./hosts/asus-n580vn/profiles.nix
+          ./profiles/server-plain.nix
           ./hosts/asus-n580vn/desktop.nix
           ./desktop
         ];
