@@ -348,5 +348,5 @@ Currently, the registry has no authentication. Consider:
 ## Related Components
 
 - `server/docker-registry/` — this module
-- `server/k8s/` — Kubernetes (k3s) configuration
-- `server/docker/` — Docker daemon configuration
+- [Kubernetes](./k8s.md) (`server/k8s/`) — bundled with this module via `profiles/server-kube.nix`
+- [Docker](./docker.md) (`server/docker/`) — a separate standalone profile (`server-plain`), not used by this registry's own k3s pairing

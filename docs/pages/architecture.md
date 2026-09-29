@@ -4,164 +4,290 @@
 
 flake-nixos-config is a declarative NixOS system configuration that combines:
 - Desktop environments and applications
-- Server services and utilities
-- Development tools and environments
-- System-wide configuration management
+- Server services (Docker, Kubernetes/k3s, a self-hosted registry)
+- Opt-in development tooling, organized as **profiles**
+- System-wide configuration management shared by every host
 
 ## Directory Structure
 
 ```
 flake-nixos-config/
 ├── hosts/                       # Per-machine, per-role configs
-│   └── asus-n56vj/               # hardware-configuration.nix + common/desktop/server.nix
-├── desktop/                    # UI applications
-│   ├── environments/           # xfce, plasma5, plasma6
-│   ├── apps/                   # browser, games, media, social, torrents
+│   ├── asus-n56vj/                 # hardware-configuration.nix + common/desktop/server.nix
+│   └── asus-n580vn/                 # hardware-configuration.nix + common/desktop.nix
+├── profiles/                    # Named, opt-in package sets — each host lists
+│   │                             # the ones it wants explicitly in flake.nix.
+│   │                             # Nothing here is implied by sharedModules.
+│   ├── minimal-dev.nix            # bash, git, direnv, h, VS Code, ai/MCP, network
+│   ├── nix-dev.nix                # Nix-the-language tooling (niv, nixfmt, ...)
+│   ├── python-dev.nix             # development/python + its ide/ (PyCharm)
+│   ├── go-dev.nix                 # development/go + its ide/ (GoLand)
+│   ├── js-dev.nix                 # development/js + its ide/ (WebStorm)
+│   ├── db-dev.nix                 # development/db/* — see the Databases section below
+│   ├── ide-tools.nix              # bruno, postman, xmind, RubyMine/PhpStorm reset scripts
+│   ├── electronics-dev.nix        # arduino, rpi-imager — opt-in, not on any host yet
+│   ├── server-kube.nix            # server/k8s + server/docker-registry (coupled)
+│   └── server-plain.nix           # server/docker (standalone, no k8s)
+├── desktop/                     # UI applications
+│   ├── environments/               # xfce, plasma5, plasma6
+│   ├── audio.nix                    # pipewire (shared by every desktop host)
+│   ├── apps/                        # browser, games, media, social, torrents
 │   └── default.nix
-├── server/                     # Server applications
-│   ├── docker/                 # Docker daemon config
-│   ├── docker-registry/        # Self-hosted Docker registry
-│   ├── k8s/                    # Kubernetes (k3s)
-│   ├── pkgs/                   # VPN and utilities
+├── server/                      # Server applications (pulled in via profiles/server-*.nix)
+│   ├── docker/                     # Docker daemon + TLS cert generation, see docs/pages/server/docker.md
+│   ├── docker-registry/            # Self-hosted registry, see docs/pages/server/docker-registry.md
+│   ├── k8s/                        # k3s, see docs/pages/server/k8s.md
+│   ├── pkgs/                       # VPN client + utilities (shared by every host, any role)
 │   └── default.nix
-├── development/                # Development tools
-│   ├── ai/                     # AI/ML tools (MCP)
-│   ├── database/               # Database tools
-│   ├── git/                    # Git utilities
-│   ├── python/                 # Python environments
-│   └── ...
-├── system/                     # System configuration
-│   ├── data/                   # Data directories
-│   └── users/                  # User configuration
-├── docs/                       # Documentation (Sphinx)
-├── flake.nix                   # Flake configuration
-└── README.md                   # Root documentation
+├── development/                 # Raw tool/package definitions, split by language.
+│   │                             # NOT wired to any host directly — see profiles/.
+│   │                             # A tool that isn't specific to one language lives
+│   │                             # under common/ instead of a language directory.
+│   ├── common/                     # Cross-language / not-a-language tooling
+│   │   ├── ai/                        # AI/ML tools, MCP servers for Claude Code
+│   │   ├── bash.nix                   # bash completion, history size
+│   │   ├── direnv/
+│   │   ├── electronics.nix            # arduino, rpi-imager
+│   │   ├── git/
+│   │   ├── h/                         # directory-jump tool
+│   │   ├── ide/
+│   │   │   ├── client.nix              # VS Code (desktop)
+│   │   │   └── server/                 # VS Code Remote-SSH server support
+│   │   ├── network/                   # private /etc/hosts entries + dev firewall ports
+│   │   └── tools/
+│   │       ├── reset-jetbrains.nix     # shared helper — see "JetBrains reset scripts" below
+│   │       └── shell.nix               # standalone nix-shell entrypoint, not wired anywhere
+│   ├── db/                         # split per-engine, see the Databases section below
+│   │   ├── ide/                       # DBeaver + DataGrip (engine-agnostic)
+│   │   ├── postgres/
+│   │   ├── mysql/
+│   │   ├── redis/
+│   │   │   └── ide/                    # RedisInsight
+│   │   └── mongo/
+│   │       └── ide/                    # MongoDB Compass, Robo 3T
+│   ├── go/
+│   │   └── ide/                       # GoLand + reset script
+│   ├── js/
+│   │   └── ide/                       # WebStorm + reset script
+│   ├── nix/                        # niv, nox, nix-index, nixfmt, nix-prefetch-git, ...
+│   └── python/
+│       └── ide/                       # PyCharm + reset script
+├── system/                      # System configuration, shared by every host
+│   ├── data/                       # Declarative user list (system/data/users.nix)
+│   └── users/                      # Turns that list into actual users.users + MOTD
+├── docs/                        # Documentation (Sphinx + MyST)
+└── flake.nix                    # Flake configuration — wires hosts to profiles
 ```
 
 ### Hosts and role variants
 
-`hosts/asus-n56vj/` holds everything specific to one physical machine:
-`hardware-configuration.nix` (disks, kernel modules — generated once by
-`nixos-generate-config`, not hand-edited), `common.nix` (bootloader,
-networking, locale, shared by every role), `desktop.nix`, and `server.nix`.
+Each `hosts/<name>/` directory holds everything specific to one physical
+machine: `hardware-configuration.nix` (disks, kernel modules — generated
+once by `nixos-generate-config`, not hand-edited), `common.nix` (bootloader,
+hostname, networking, locale, timezone/stateVersion overrides — shared by
+every role on that machine), and one file per role (`desktop.nix`,
+`server.nix`).
 
-`flake.nix` exposes two `nixosConfigurations` for this same hardware —
-`asus-n56vj-desktop` (imports `./desktop`, `hosts/asus-n56vj/desktop.nix`)
-and `asus-n56vj-server` (imports `./server`, `hosts/asus-n56vj/server.nix`)
-— so the machine can be rebuilt as a GUI workstation or a headless
-docker/k3s box from the same repo, without either role's modules being
-active in the other.
+`flake.nix` exposes one `nixosConfigurations` entry per host+role
+combination:
+
+| `nixosConfigurations` | Host | Role | Profiles |
+|---|---|---|---|
+| `asus-n56vj-desktop` | asus-n56vj | GUI workstation | `commonDevProfiles` (all seven dev profiles) |
+| `asus-n56vj-server` | asus-n56vj | Headless docker/k3s box | `commonDevProfiles` + `server-kube` + `server-plain` + VS Code server |
+| `asus-n580vn-desktop` | asus-n580vn | GUI workstation | `minimal-dev` + `server-plain` only |
+
+`asus-n56vj` runs two roles on the same hardware from the same repo,
+without either role's modules active in the other. `asus-n580vn` currently
+has one role and deliberately gets a slimmer profile set than the shared
+`commonDevProfiles` list — see "Profiles" below for why that's a supported,
+normal thing for a host to do.
+
+### Profiles: opt-in package sets
+
+`development/` and parts of `server/` hold raw tool definitions but are
+**not** imported by any shared module — a host only gets a given tool set by
+listing the matching `profiles/*.nix` file explicitly in its
+`nixosConfigurations` entry in `flake.nix`. This replaced an earlier design
+where `development/default.nix` unconditionally pulled in a fixed list of
+tools for every host.
+
+`flake.nix` defines `commonDevProfiles` (`minimal-dev`, `nix-dev`,
+`python-dev`, `go-dev`, `js-dev`, `db-dev`, `ide-tools`) as the set most
+hosts happen to want; `server-kube`/`server-plain` are added only where a
+host actually runs server workloads. `asus-n580vn-desktop` opts out of
+`commonDevProfiles` entirely and lists just `minimal-dev` + `server-plain` —
+a deliberately smaller footprint than the other two hosts. A new host is
+free to compose any subset from scratch; nothing under `development/` is
+implied by `sharedModules` beyond `./system` and `./server/pkgs` (VPN
+client, used regardless of role).
+
+See [Development Environment](./development/development.md) for the full
+profile-by-profile breakdown.
+
+### JetBrains reset scripts
+
+`development/common/tools/reset-jetbrains.nix` is a plain Nix function (not
+a NixOS module) — `{ writeShellScriptBin }: { reset = name: ...; }` — that
+every language's `ide/` module and `profiles/ide-tools.nix` import
+individually to build a `reset-<IDE>` binary. It clears a JetBrains IDE's
+evaluation-license state and predates this repo's current form; it's
+carried forward as-is.
+
+### Databases: `development/db/`
+
+Split per engine, following the same "language directory + not-specific →
+common" rule as the programming-language directories, just with database
+engines instead of languages:
+
+| Directory | Engine-specific content |
+|---|---|
+| `db/postgres/` | `postgresql` (CLI: `psql`) |
+| `db/mysql/` | `mariadb` (CLI: `mysql`) — no client-only attribute exists in nixpkgs, this pulls in the full server+client package |
+| `db/redis/` | `redis` (CLI: `redis-cli`) + `db/redis/ide/` (RedisInsight) |
+| `db/mongo/` | `mongosh` (CLI) + `db/mongo/ide/` (MongoDB Compass, Robo 3T — Mongo-specific GUIs) |
+| `db/ide/` | DBeaver + DataGrip — **not** engine-specific (both work across Postgres/MySQL/etc. in one product), so they live at the `db/` top level rather than under one engine |
+
+`profiles/db-dev.nix` imports all of the above. A GUI tool only gets its
+own `ide/` subdirectory when it's actually tied to one engine (Compass/Robo
+3T → Mongo only, RedisInsight → Redis only); cross-engine tools like DBeaver
+and DataGrip stay at `db/ide/`.
 
 ## Component Architecture
 
 ### Desktop Layer
-- **Environments**: Multiple desktop environments (XFCE, KDE Plasma)
-- **Applications**: User-facing applications (browser, media, games)
-- **Features**: GUI applications, user preferences, theming
+- **Environments**: Multiple desktop environments (XFCE, KDE Plasma 5/6)
+- **Applications**: User-facing applications (browser, media, social, games/torrents — the latter two opt-in, commented out of `desktop/default.nix`)
+- **Audio**: pipewire, shared by every desktop host via `desktop/audio.nix`
 
 ### Server Layer
-- **Docker Registry**: Self-hosted container image registry
-- **Kubernetes**: k3s cluster for orchestration
-- **Docker**: Container runtime
-- **Utilities**: VPN, system utilities
+- **[`profiles/server-kube.nix`](./server/k8s.md)**: k3s cluster + [docker-registry](./server/docker-registry.md) (coupled — k3s pulls images from `registry.home`)
+- **[`profiles/server-plain.nix`](./server/docker.md)**: standalone Docker daemon, TLS-only remote API, no Kubernetes
+- **Utilities**: VPN client (`server/pkgs`), on every host regardless of role
 
 ### Development Layer
-- **AI/ML**: Machine Learning tools, MCP integration
-- **Database**: Database clients and tools
-- **Languages**: Python, Nix environments
-- **Version Control**: Git configuration and tools
+See [Development Environment](./development/development.md) for the full
+profile list and directory-by-directory breakdown. Broadly: AI/ML (MCP
+integration for Claude Code), database clients (SQL + NoSQL), Python/Go/
+JS/Nix language tooling with per-language JetBrains IDEs, cross-language
+tools that don't fit one language, and Git/shell/direnv baseline config —
+each gated behind its own `profiles/*.nix`.
 
 ### System Layer
-- **Users**: User accounts and permissions
-- **Data**: System data directories
-- **Configuration**: Global system settings
+- **Users**: declared once in `system/data/users.nix`, turned into real
+  `users.users` (+ SSH keys, MOTD) by `system/users/`
+- **Aliases**: `system/aliases.nix`, shared by every host
+- **Configuration**: `nixpkgs.config.allowUnfree`, `time.timeZone`,
+  `nix.settings.experimental-features` — all set once in `system/default.nix`
+  rather than per-host
 
 ## Service Integration
 
 ### Docker Registry
 
+See [Docker Registry](./server/docker-registry.md) for the full
+architecture diagrams (with/without k3s), certificate generation, and
+troubleshooting. Summary:
+
 ```
-┌─────────────────────┐
-│  Docker Client      │
-└──────────┬──────────┘
-           │ HTTPS
-           ▼
-┌─────────────────────┐
-│ Traefik (k3s)       │
-│ - TLS Termination   │
-│ - Route Host        │
-└──────────┬──────────┘
-           │ HTTP
-           ▼
-┌─────────────────────┐
-│ Docker Registry     │
-│ - Port 5000         │
-│ - /home/docker-     │
-│   registry/data     │
-└─────────────────────┘
+Client → HTTPS → Traefik (k3s) or nginx (no k3s) → HTTP:5000 → Docker Registry
 ```
 
 ### Kubernetes Integration
 
-- k3s provides lightweight Kubernetes
-- Traefik serves as ingress controller
-- Services integrate with system DNS
-- Persistent volumes use host paths
+See [Kubernetes](./server/k8s.md). Summary: k3s provides the cluster,
+Traefik serves as ingress controller, and it's configured to mirror images
+through the local registry above rather than pulling from the internet
+directly.
+
+### Docker (standalone)
+
+See [Docker](./server/docker.md). Summary: a separate profile
+(`server-plain`) from Kubernetes — a plain Docker daemon with a TLS-secured
+remote API (client-cert auth on port 2376, generated on first boot,
+private keys never touch the Nix store).
 
 ## Certificate Management
 
-- Self-signed certificates generated during build
-- SANs (Subject Alternative Names) for proper TLS validation
-- Automatic trust via NixOS security.pki
-- Regeneration via systemd services
+Two independent certificate-generation mechanisms exist, both as systemd
+oneshot services that only (re)generate when their output is missing —
+neither touches the Nix store, since private keys there would be
+world-readable forever:
+
+- **Registry TLS** (`server/docker-registry/certificates/`): self-signed
+  cert with a proper SAN for `registry.home`, trusted system-wide via
+  `security.pki.certificateFiles`. See
+  [Docker Registry → Certificate Management](./server/docker-registry.md#certificate-management).
+- **Docker remote-API TLS** (`server/docker/tls.nix`): a full CA + server +
+  client cert chain under `/home/docker/certs/`, for client-cert
+  authentication rather than system-wide trust. See
+  [Docker → TLS-secured remote API](./server/docker.md#tls-secured-remote-api).
 
 ## Configuration Management
 
 All configuration is declarative using:
 - **Nix language** for configuration as code
-- **Flakes** for reproducible, versioned environments
-- **Modular structure** for easy composition
-- **systemd** for service management
+- **Flakes** for reproducible, versioned environments — `flake.lock` pins
+  `nixpkgs`, `home-manager`, and the local `docs` flake
+- **Profiles** (`profiles/*.nix`) for opt-in composition instead of one
+  fixed module every host gets
+- **systemd** for service management, including one-shot generation of
+  secrets/certificates that must not live in the Nix store
 
 ## Dependencies
 
 ### Build-time
-- Nix package manager with flakes support
-- openssl for certificate generation
+- Nix package manager with flakes support (`nix.settings.experimental-features`, set in `system/default.nix`)
+- openssl for certificate generation (registry + Docker TLS)
 
 ### Runtime
 - NixOS operating system
 - systemd for service management
-- k3s for Kubernetes features
-- Docker for container runtime
+- k3s for Kubernetes features (server-kube hosts only)
+- Docker for container runtime (server-kube and server-plain hosts)
 
 ## How It All Works Together
 
 1. **System Boot**
-   - NixOS evaluates flake.nix
+   - NixOS evaluates `flake.nix`, resolving each host's `sharedModules` + chosen `profiles/*.nix` + host-specific files
    - Services start in dependency order
-   - Certificates generated and trusted
+   - Certificates generated (registry TLS, Docker TLS) if not already present, then trusted/used by their respective services
 
-2. **Service Startup**
-   - Docker registry starts on localhost:5000
-   - k3s initializes and starts Traefik
-   - DNS entries added to /etc/hosts
+2. **Service Startup** (server-kube hosts)
+   - Docker registry starts on `localhost:5000`
+   - k3s initializes, waits for the registry certificate, starts Traefik
+   - DNS entries (`registry.home`, `k3s.local`) added to `/etc/hosts`
 
 3. **User Access**
-   - Desktop environment loads
-   - Applications available for use
-   - Registry accessible via registry.home
+   - Desktop environment loads (desktop hosts)
+   - Profile-provided applications/IDEs available for use
+   - Registry accessible via `registry.home`; Docker remote API (if enabled) via TLS on port 2376
 
 ## Performance Considerations
 
 - **Memory limits** on Docker Registry (512M max, 400M high water mark)
 - **CPU quotas** for resource fairness (200% for registry)
 - **I/O weights** for disk priority management
-- **Network optimization** via Traefik configuration
+- **Docker cleanup timers** (`server/docker/cleanup.nix`) prune build
+  cache/images/volumes on a schedule so a long-running server doesn't
+  silently fill its disk — see [Docker → Cleanup automation](./server/docker.md#cleanup-automation)
 
 ## Security Considerations
 
-- Self-signed certificates for local use
-- No authentication on registry (internal only)
-- All services bound to localhost or private networks
-- System-wide CA trust configuration
+- Self-signed certificates for local use (registry + Docker TLS), not
+  intended to be internet-facing
+- Docker Registry itself has no authentication (internal only, bound to
+  the k3s/host network)
+- **Docker remote API** (`profiles/server-plain.nix` / `profiles/server-kube.nix`,
+  `server/docker/`): TLS client-cert auth on port 2376, **not** plaintext
+  port 2375. `server/docker/tls.nix` generates a CA + server + client cert
+  pair under `/home/docker/certs/` on first boot — private keys never touch
+  the Nix store or git. Copy `ca.pem`/`client-cert.pem`/`client-key.pem`
+  from there to any machine you want to control the daemon from — see
+  [Docker → TLS-secured remote API](./server/docker.md#tls-secured-remote-api)
+  for the exact client setup.
+- System-wide CA trust configuration for the registry certificate
+- `development/common/tools/reset-jetbrains.nix` clears JetBrains
+  evaluation-license state — see
+  [JetBrains reset scripts](#jetbrains-reset-scripts) above; be aware of
+  what it does before relying on it
