@@ -3,9 +3,19 @@
 { config, pkgs, ... }:
 
 {
-  # Switched from GRUB+os-prober (old dual-boot setup) to systemd-boot.
-  boot.loader.systemd-boot.enable = true;
+  # GRUB (not systemd-boot) — this machine still dual-boots a real, intact
+  # Manjaro install (/dev/sdb3, EFI NVRAM entry "Manjaro"). useOSProber
+  # surfaces it in the boot menu; switching to systemd-boot wouldn't delete
+  # Manjaro but would lose that unified menu (systemd-boot has no os-prober
+  # equivalent — Manjaro would only be reachable via the firmware's own
+  # one-time boot-device picker, e.g. F12).
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub = {
+    enable = true;
+    devices = [ "nodev" ];
+    efiSupport = true;
+    useOSProber = true;
+  };
 
   networking.hostName = "asus-n580vn";
   networking.networkmanager.enable = true;
