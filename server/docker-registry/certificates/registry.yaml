@@ -30,6 +30,23 @@ spec:
   tls:
     secretName: registry-home-tls
 ---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: registry-mirror-home
+  namespace: kube-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`registry.mirror`)
+      kind: Rule
+      services:
+        - name: docker-registry-mirror-svc
+          port: 5001
+  tls:
+    secretName: registry-home-tls
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -59,3 +76,33 @@ subsets:
     ports:
       - name: http
         port: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-registry-mirror-svc
+  namespace: kube-system
+  labels:
+    app: docker-registry-mirror
+    version: v2
+  annotations:
+    description: "Docker Registry pull-through mirror service - self-signed TLS"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5001
+      targetPort: 5001
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: docker-registry-mirror-svc
+  namespace: kube-system
+subsets:
+  - addresses:
+      - ip: HOST_IP_PLACEHOLDER
+    ports:
+      - name: http
+        port: 5001
