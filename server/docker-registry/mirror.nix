@@ -9,6 +9,8 @@
 # hand-rolled as its own systemd service/port, reusing the `docker-registry`
 # system user/group that registry.nix's module already creates.
 let
+  cfg = config.services.dockerRegistryMirror;
+
   port = 5001;
   storagePath = "/home/docker-registry/mirror-data";
 
@@ -44,40 +46,44 @@ let
   configFile = pkgs.writeText "docker-registry-mirror-config.yml" (builtins.toJSON registryConfig);
 in
 {
-  systemd.tmpfiles.rules = [
-    "d ${storagePath} 0750 docker-registry docker-registry -"
-  ];
+  options.services.dockerRegistryMirror.enable = lib.mkEnableOption "the Docker Hub pull-through cache registry";
 
-  systemd.services.docker-registry-mirror = {
-    description = "Docker Registry pull-through cache for Docker Hub";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    script = ''
-      ${config.services.dockerRegistry.package}/bin/registry serve ${configFile}
-    '';
-    serviceConfig = {
-      User = "docker-registry";
-      Group = "docker-registry";
-      WorkingDirectory = storagePath;
-      MemoryMax = "512M";
-      MemoryHigh = "400M";
-      CPUQuota = "200%";
-      IOWeight = 500;
+  config = lib.mkIf cfg.enable {
+    systemd.tmpfiles.rules = [
+      "d ${storagePath} 0750 docker-registry docker-registry -"
+    ];
+
+    systemd.services.docker-registry-mirror = {
+      description = "Docker Registry pull-through cache for Docker Hub";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" ];
+      script = ''
+        ${config.services.dockerRegistry.package}/bin/registry serve ${configFile}
+      '';
+      serviceConfig = {
+        User = "docker-registry";
+        Group = "docker-registry";
+        WorkingDirectory = storagePath;
+        MemoryMax = "512M";
+        MemoryHigh = "400M";
+        CPUQuota = "200%";
+        IOWeight = 500;
+      };
     };
-  };
 
-  # Health check service, mirroring registry.nix's pattern for the push registry.
-  systemd.services.docker-registry-mirror-health = {
-    description = "Docker Registry mirror health check";
-    after = [ "docker-registry-mirror.service" ];
-    wants = [ "docker-registry-mirror.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.curl}/bin/curl -f http://localhost:${builtins.toString port}/v2/ || exit 1";
-      Restart = "on-failure";
-      RestartSec = "10s";
-      TimeoutStartSec = "5s";
+    # Health check service, mirroring registry.nix's pattern for the push registry.
+    systemd.services.docker-registry-mirror-health = {
+      description = "Docker Registry mirror health check";
+      after = [ "docker-registry-mirror.service" ];
+      wants = [ "docker-registry-mirror.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.curl}/bin/curl -f http://localhost:${builtins.toString port}/v2/ || exit 1";
+        Restart = "on-failure";
+        RestartSec = "10s";
+        TimeoutStartSec = "5s";
+      };
     };
   };
 }

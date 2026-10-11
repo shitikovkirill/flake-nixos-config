@@ -26,6 +26,7 @@ in
         "unix:///var/run/docker.sock"
         "tcp://0.0.0.0:2375"
       ];
+      "registry-mirrors" = lib.optional config.services.dockerRegistryMirror.enable "https://registry.mirror";
     };
   };
 
