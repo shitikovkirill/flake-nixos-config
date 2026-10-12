@@ -2,6 +2,8 @@
 { config, ... }:
 
 {
+  imports = [ ./lid-switch.nix ];
+
   services.openssh.enable = true;
 
   environment.shellAliases = {
