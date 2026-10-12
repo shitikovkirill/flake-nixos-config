@@ -11,6 +11,7 @@
     ./git
     ./direnv
     ./nix
+    ./nix-ld.nix
     ./h
     ./ide.nix
     ./ai
