@@ -1,57 +1,33 @@
 { config, lib, ... }:
 
+let
+  # Both vhosts share the same cert (its SAN covers both hostnames) and TLS
+  # settings — only the upstream port differs. Proxy headers (Host,
+  # X-Real-IP, X-Forwarded-For, X-Forwarded-Proto) come from
+  # recommendedProxySettings below, not set per-location here.
+  mkRegistryVhost = port: {
+    forceSSL = true;
+    sslCertificate = "/var/lib/registry-certs/registry.home.crt";
+    sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
+
+    locations."/" = {
+      proxyPass = "http://localhost:${toString port}";
+      proxyWebsockets = true;
+    };
+
+    # Registry health check endpoint
+    locations."= /v2/" = {
+      proxyPass = "http://localhost:${toString port}/v2/";
+    };
+  };
+in
 lib.mkIf (!(config.services.k3s.enable or false)) {
   services.nginx = {
     enable = true;
     recommendedProxySettings = true;
     recommendedTlsSettings = true;
 
-    virtualHosts."registry.home" = {
-      forceSSL = true;
-      sslCertificate = "/var/lib/registry-certs/registry.home.crt";
-      sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
-      sslProtocols = [ "TLSv1.2" "TLSv1.3" ];
-      sslCiphers = "HIGH:!aNULL:!MD5";
-
-      locations."/" = {
-        proxyPass = "http://localhost:5000";
-        proxyWebsockets = true;
-        extraProxyHeaders = {
-          "Host" = "$host";
-          "X-Real-IP" = "$remote_addr";
-          "X-Forwarded-For" = "$proxy_add_x_forwarded_for";
-          "X-Forwarded-Proto" = "$scheme";
-        };
-      };
-
-      # Docker registry health check endpoint
-      locations."= /v2/" = {
-        proxyPass = "http://localhost:5000/v2/";
-      };
-    };
-
-    virtualHosts."registry.mirror" = {
-      forceSSL = true;
-      sslCertificate = "/var/lib/registry-certs/registry.home.crt";
-      sslCertificateKey = "/var/lib/registry-certs/registry.home.key";
-      sslProtocols = [ "TLSv1.2" "TLSv1.3" ];
-      sslCiphers = "HIGH:!aNULL:!MD5";
-
-      locations."/" = {
-        proxyPass = "http://localhost:5001";
-        proxyWebsockets = true;
-        extraProxyHeaders = {
-          "Host" = "$host";
-          "X-Real-IP" = "$remote_addr";
-          "X-Forwarded-For" = "$proxy_add_x_forwarded_for";
-          "X-Forwarded-Proto" = "$scheme";
-        };
-      };
-
-      # Docker registry mirror health check endpoint
-      locations."= /v2/" = {
-        proxyPass = "http://localhost:5001/v2/";
-      };
-    };
+    virtualHosts."registry.home" = mkRegistryVhost 5000;
+    virtualHosts."registry.mirror" = mkRegistryVhost 5001;
   };
 }

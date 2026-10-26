@@ -49,6 +49,17 @@ in
   options.services.dockerRegistryMirror.enable = lib.mkEnableOption "the Docker Hub pull-through cache registry";
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = config.services.dockerRegistry.enable;
+        message = ''
+          services.dockerRegistryMirror requires services.dockerRegistry.enable = true:
+          it reuses the "docker-registry" system user/group and the registry package
+          that module creates, rather than provisioning its own.
+        '';
+      }
+    ];
+
     systemd.tmpfiles.rules = [
       "d ${storagePath} 0750 docker-registry docker-registry -"
     ];
