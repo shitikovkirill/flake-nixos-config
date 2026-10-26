@@ -1,13 +1,13 @@
 # MCP Servers Configuration
 
-`development/ai/mcp/default.nix` configures MCP (Model Context Protocol)
+`development/common/ai/mcp/default.nix` configures MCP (Model Context Protocol)
 servers for Claude Code. MCP servers extend Claude's capabilities by
 providing access to external tools, APIs, and services.
 
 ## Current Setup
 
 All servers below are defined in a single `mcpServers` attribute set in
-`development/ai/mcp/default.nix` and are **all active unconditionally** —
+`development/common/ai/mcp/default.nix` and are **all active unconditionally** —
 there's no per-server enable/disable flag. The corresponding packages are
 installed via `environment.systemPackages`, and the merged config is
 written to `~/.config/mcp/config.json` for every user declared in
@@ -85,12 +85,12 @@ Resource impact, high to low: **playwright** (full browser) > **k8s**
 
 Since everything here is always-on, the practical lever is which packages
 you keep in the `mcpServers`/`environment.systemPackages` lists in
-`development/ai/mcp/default.nix` — see below.
+`development/common/ai/mcp/default.nix` — see below.
 
 ## Adding or Removing a Server
 
 There's no `disabled` flag to flip — edit
-`development/ai/mcp/default.nix` directly:
+`development/common/ai/mcp/default.nix` directly:
 
 1. Remove (or comment out) the server's entry in the `mcpServers`
    attribute set.

@@ -1,5 +1,12 @@
 { config, pkgs, ... }: {
-  environment.systemPackages = with pkgs; [ python3 ];
+  environment.systemPackages = with pkgs; [
+    python3
+    poetry
+    uv
+    ruff
+    python3.pkgs.ipython
+    pipx
+  ];
 
   programs.zsh = {
     ohMyZsh = {
