@@ -37,6 +37,9 @@ Project Features
 ✅ **Docker Registry**
    Self-hosted registry with HTTPS support via Traefik
 
+✅ **ECS Anywhere**
+   Native (non-install-script) connection of NixOS hosts as external ECS container instances
+
 ✅ **Kubernetes Integration**
    k3s cluster management
 
@@ -65,6 +68,7 @@ Quick Links
 
 - :doc:`pages/quickstart` - Get up and running
 - :doc:`pages/server/docker-registry` - Docker Registry setup and usage
+- :doc:`pages/server/ecs-anywhere` - ECS Anywhere setup and usage
 - :doc:`pages/architecture` - System architecture overview
 
 Indices and tables

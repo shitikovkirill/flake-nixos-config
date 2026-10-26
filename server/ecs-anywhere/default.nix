@@ -49,12 +49,21 @@ in
         # state survives reboots/rebuilds instead of re-registering as a
         # new instance every time.
         ECS_DATADIR = "/var/lib/ecs/data";
+        # On a hybrid-registered instance, amazon-ssm-agent refreshes
+        # temporary credentials into ~/.aws/credentials (default profile)
+        # for local processes to pick up — that's how ecs-agent gets ECS
+        # Anywhere credentials. Both services run as root with no `User=`,
+        # so systemd never sets $HOME for them; without it, the Go AWS SDK
+        # (os.UserHomeDir()) can't find that file at all.
+        HOME = "/root";
       };
     };
 
-    # The ECS Anywhere credential endpoint the agent talks to is provided by
-    # the SSM agent on localhost, so ecs-agent has to come up after SSM is
-    # running, not just after the network.
+    systemd.services.amazon-ssm-agent.environment.HOME = "/root";
+
+    # ecs-agent needs amazon-ssm-agent to have already written the shared
+    # credentials file it reads on startup, so it has to come up after SSM
+    # is running, not just after the network.
     systemd.services.ecs-agent = {
       after = [ "amazon-ssm-agent.service" ];
       wants = [ "amazon-ssm-agent.service" ];

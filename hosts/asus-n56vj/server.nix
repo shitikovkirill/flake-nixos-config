@@ -6,6 +6,12 @@
 
   services.openssh.enable = true;
 
+  services.ecsAnywhere = {
+    enable = true;
+    cluster = "PhotoSaver-PSClusterE98E69D4-ff8jz33nFro0";
+    region = "eu-central-1";
+  };
+
   environment.shellAliases = {
     monitor_off = "echo 1 | sudo tee /sys/class/graphics/fb0/blank";
     monitor_on = "echo 0 | sudo tee /sys/class/graphics/fb0/blank";
