@@ -36,7 +36,7 @@
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.curl}/bin/curl -f http://localhost:5000/v2/ || exit 1";
+      ExecStart = "${pkgs.curl}/bin/curl -f http://localhost:5000/v2/";
       Restart = "on-failure";
       RestartSec = "10s";
       TimeoutStartSec = "5s";
