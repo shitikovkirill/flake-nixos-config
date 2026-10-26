@@ -21,6 +21,7 @@ flake-nixos-config/
 ├── server/                     # Server applications
 │   ├── docker/                 # Docker daemon config
 │   ├── docker-registry/        # Self-hosted Docker registry
+│   ├── ecs-anywhere/           # ECS Anywhere (EXTERNAL container instance)
 │   ├── k8s/                    # Kubernetes (k3s)
 │   ├── pkgs/                   # VPN and utilities
 │   └── default.nix
@@ -61,6 +62,7 @@ active in the other.
 
 ### Server Layer
 - **Docker Registry**: Self-hosted container image registry
+- **ECS Anywhere**: Registers the host as an external ECS container instance
 - **Kubernetes**: k3s cluster for orchestration
 - **Docker**: Container runtime
 - **Utilities**: VPN, system utilities

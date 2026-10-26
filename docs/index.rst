@@ -18,6 +18,7 @@ Kubernetes (k3s), and comprehensive development tools.
    :caption: Services & Components
 
    pages/server/docker-registry
+   pages/server/ecs-anywhere
    pages/architecture
 
 .. toctree::
