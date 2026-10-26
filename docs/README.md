@@ -66,10 +66,12 @@ docs/
 │   ├── quickstart.md                # Getting started guide
 │   ├── architecture.md              # System architecture overview
 │   ├── server/
-│   │   └── docker-registry.md       # mirrors server/docker-registry/
+│   │   ├── docker.md                # mirrors server/docker/ (standalone, TLS remote API)
+│   │   ├── docker-registry.md       # mirrors server/docker-registry/
+│   │   └── k8s.md                   # mirrors server/k8s/
 │   └── development/
-│       ├── development.md           # mirrors development/
-│       └── mcp-servers.md           # mirrors development/ai/mcp/
+│       ├── development.md           # mirrors development/ (profiles, per-language dirs, db/)
+│       └── mcp-servers.md           # mirrors development/common/ai/mcp/
 └── _build/                          # Build artifacts (generated)
     └── html/                        # Compiled HTML
 ```

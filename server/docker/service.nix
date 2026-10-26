@@ -24,7 +24,7 @@ in
       data-root = "/home/docker/data";
       hosts = [
         "unix:///var/run/docker.sock"
-        "tcp://0.0.0.0:2375"
+        "tcp://0.0.0.0:2376"
       ];
       # `services.dockerRegistryMirror` is declared in the sibling
       # server/docker-registry module, not here — fall back to `false`
@@ -33,6 +33,12 @@ in
       "registry-mirrors" = lib.optional (
         (config.services.dockerRegistryMirror or { }).enable or false
       ) "https://registry.mirror";
+
+      tls = true;
+      tlsverify = true;
+      tlscacert = "/home/docker/certs/ca.pem";
+      tlscert = "/home/docker/certs/server-cert.pem";
+      tlskey = "/home/docker/certs/server-key.pem";
     };
   };
 

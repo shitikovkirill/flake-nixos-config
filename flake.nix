@@ -22,7 +22,8 @@
     let
       system = "x86_64-linux";
 
-      # Modules shared by every variant of every host.
+      # Modules shared by every variant of every host. Dev/server package
+      # sets are NOT here — each host opts into the profiles/ it wants.
       sharedModules = [
         home-manager.nixosModules.home-manager
         (
@@ -30,24 +31,26 @@
           {
             home-manager.users = lib.genAttrs (map (u: u.name) config.services.systemUsers.users) (
               name: {
-                home.stateVersion = "26.05";
+                home.stateVersion = lib.mkDefault "26.05";
               }
             );
           }
         )
-        ./development
         ./server/pkgs
         ./system
       ];
     in
     {
       # Same physical laptop, two roles: pick one per `nixos-rebuild switch --flake .#<name>`.
+      # Dev-profile toggles live in hosts/<name>/profiles.nix — comment/uncomment
+      # lines there per host instead of editing this file.
       nixosConfigurations.asus-n56vj-desktop = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs; };
         modules = sharedModules ++ [
           ./hosts/asus-n56vj/hardware-configuration.nix
           ./hosts/asus-n56vj/common.nix
+          ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/desktop.nix
           ./desktop
         ];
@@ -59,11 +62,29 @@
         modules = sharedModules ++ [
           ./hosts/asus-n56vj/hardware-configuration.nix
           ./hosts/asus-n56vj/common.nix
+          ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/server.nix
-          ./server
+          ./profiles/server-kube.nix
+          ./profiles/server-plain.nix
+          # ECS Anywhere — registers this host as an external ECS container
+          # instance; toggled via services.ecsAnywhere.enable in server.nix.
+          ./server/ecs-anywhere
           # VS Code Remote-SSH server support — useful for a headless box
-          # you connect to remotely, not enabled by default in development/.
-          ./development/vs_code
+          # you connect to remotely, not enabled by default in profiles/.
+          ./development/common/ide/server
+        ];
+      };
+
+      nixosConfigurations.asus-n580vn-desktop = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs; };
+        modules = sharedModules ++ [
+          ./hosts/asus-n580vn/hardware-configuration.nix
+          ./hosts/asus-n580vn/common.nix
+          ./hosts/asus-n580vn/profiles.nix
+          ./profiles/server-plain.nix
+          ./hosts/asus-n580vn/desktop.nix
+          ./desktop
         ];
       };
     };

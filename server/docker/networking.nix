@@ -1,8 +1,8 @@
 { config, ... }:
 
 {
-  # Docker remote API access
+  # Docker remote API access (TLS client-cert auth, see ./tls.nix)
   networking.firewall.allowedTCPPorts = [
-    2375  # Docker remote API
+    2376  # Docker remote API (TLS)
   ];
 }

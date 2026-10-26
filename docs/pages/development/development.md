@@ -2,47 +2,148 @@
 
 ## Overview
 
-The development environment includes tools for:
-- Python development
-- Nix configuration
-- Database work
-- AI/ML tools (MCP)
-- Git version control
+Development tooling is split into **profiles** — named, opt-in package sets
+under `profiles/`. Each one imports raw content from `development/` (or
+`server/` for the two server profiles) and installs
+`environment.systemPackages`, zsh plugins, and shell aliases for one
+concern. A host gets a profile only by listing it explicitly in its
+`nixosConfigurations` entry in `flake.nix` — nothing under `development/`
+is wired to any host implicitly.
 
-## Available Tools
+This replaced an earlier `development/default.nix` that unconditionally
+imported (or half-commented-out) a fixed list of tools for every host. That
+made it impossible to give one host Go tooling and another JS tooling
+without editing a shared file both of them used.
 
-### Python
-- Python development environments
-- Virtual environments support
-- Package management tools
+## `development/` is organized by language
 
-### Nix
-- Nix language tooling
-- Flake support
-- nixpkgs integration
-- Home-manager configuration
+Inside `development/`, content is split one directory per programming
+language (`python/`, `go/`, `js/`, `nix/`) plus `db/` (split further per
+database engine — see below) and `common/` for everything that isn't
+specific to a single language: git, direnv, bash, VS Code, AI/MCP tooling,
+the dev-network `/etc/hosts` setup, electronics, and the JetBrains
+trial-reset helper. The rule is simple: **if a tool is specific to one
+language, it lives under that language's directory; if it isn't, it goes
+in `common/`.**
 
-### Database
-- Database clients and CLI tools
-- Connection utilities
-- Data migration tools
+Each language directory that has a JetBrains IDE also has its own `ide/`
+subdirectory (`python/ide/`, `go/ide/`, `js/ide/`) holding that IDE plus its
+reset script, so the language's full toolchain — runtime, CLI, and IDE —
+lives together.
 
-### AI/ML
-- MCP (Machine Learning Protocol) tools
-- AI development frameworks
-- LLM integration tools
+```
+development/
+├── common/            # not specific to any one language
+│   ├── ai/               # MCP servers for Claude Code — see mcp-servers.md
+│   ├── bash.nix
+│   ├── direnv/
+│   ├── electronics.nix   # arduino, rpi-imager
+│   ├── git/
+│   ├── h/                # directory-jump tool
+│   ├── ide/
+│   │   ├── client.nix     # VS Code
+│   │   └── server/        # VS Code Remote-SSH server support
+│   ├── network/          # private /etc/hosts entries, dev firewall ports
+│   ├── nix-ld.nix        # run dynamically-linked non-NixOS binaries
+│   └── tools/
+│       ├── reset-jetbrains.nix
+│       └── shell.nix
+├── db/                 # split per engine — see "Databases" below
+├── go/
+│   ├── default.nix       # go compiler/toolchain
+│   └── ide/               # GoLand + reset script
+├── js/
+│   ├── default.nix       # nodejs, yarn, pnpm, typescript, npm-clean alias
+│   └── ide/               # WebStorm + reset script
+├── nix/
+│   └── default.nix       # niv, nox, nix-index, nixfmt, nix-prefetch-git, containers_rm, nixfmt_this alias
+└── python/
+    ├── default.nix       # python3, poetry, uv, ruff, ipython, pipx, py-clean/ppath aliases
+    ├── ide/                # PyCharm + reset script
+    ├── modules/            # legacy standalone package derivations (create-aio-app, setuptools-scm-git-archive)
+    └── nix-shell/          # standalone nix-shell entrypoint for the above, not wired to any profile
+```
 
-### Git
-- Git configuration
-- Git utilities and hooks
-- Version control helpers
+## Profiles
 
-### VS Code Remote Server
+| Profile | Imports | Contents |
+|---|---|---|
+| `minimal-dev` | `development/common/{bash.nix,git,direnv,h,ide/client.nix,ai,network,nix-ld.nix}` | Baseline: shellcheck+bash history, full `programs.git` config (git, gitg, git-crypt, pre-commit), direnv+nix-direnv, `h` directory-jump, VS Code, MCP/AI tooling, private dev `/etc/hosts` + firewall port range, `nix-ld` for running dynamically-linked non-NixOS binaries |
+| `nix-dev` | `development/nix` | niv, nox, nix-info, nix-index, nixfmt, nix-prefetch-git, a `containers_rm` helper, `nixfmt_this` alias |
+| `python-dev` | `development/python` + `development/python/ide` | python3, poetry, uv, ruff, ipython, pipx, `py-clean`/`ppath` aliases, PyCharm + trial-reset script |
+| `go-dev` | `development/go` + `development/go/ide` | go, GoLand + trial-reset script |
+| `js-dev` | `development/js` + `development/js/ide` | nodejs, yarn, pnpm, typescript, `npm-clean` alias, WebStorm + trial-reset script |
+| `db-dev` | `development/db/*` | See [Databases](#databases) below |
+| `ide-tools` | — (inline) | Cross-tool leftovers that don't fit one language: bruno, postman, xmind, RubyMine + PhpStorm trial-reset scripts |
+| `electronics-dev` | `development/common/electronics.nix` | arduino, rpi-imager — not currently used by any host |
+| `server-kube` | `server/k8s` + `server/docker-registry` | See [Kubernetes](../server/k8s.md) |
+| `server-plain` | `server/docker` | See [Docker](../server/docker.md) |
 
-`development/vs_code/` provides VS Code Remote-SSH server support via the
+### How a host picks its profiles
+
+Each host has its own `hosts/<name>/profiles.nix` listing every profile
+above as an import, all commented out except `minimal-dev`:
+
+```nix
+# hosts/asus-n56vj/profiles.nix
+{
+  imports = [
+    ../../profiles/minimal-dev.nix
+    # ../../profiles/nix-dev.nix
+    # ../../profiles/python-dev.nix
+    # ../../profiles/go-dev.nix
+    # ../../profiles/js-dev.nix
+    # ../../profiles/db-dev.nix
+    # ../../profiles/ide-tools.nix
+    # ../../profiles/electronics-dev.nix
+  ];
+}
+```
+
+To turn a profile on for a host, uncomment its line in that host's
+`profiles.nix` — nothing in `flake.nix` needs to change, and it can't
+accidentally affect another host. `server-kube`/`server-plain` are wired
+directly per role in `flake.nix` instead (they define what a *role* is —
+"headless docker/k3s box" — not a personal tool preference), though
+`asus-n580vn-desktop` adds `server-plain` directly even on its desktop
+role, showing that's a default rather than a hard rule. See
+[Architecture → Hosts and role variants](../architecture.md#hosts-and-role-variants)
+for the full per-host table.
+
+## Databases
+
+`development/db/` splits database tooling the same way the top-level
+`development/` splits languages — one directory per engine, with anything
+not specific to one engine at the `db/` top level instead:
+
+| Directory | Contents |
+|---|---|
+| `db/ide/` | DBeaver + JetBrains DataGrip — both work across Postgres/MySQL/etc. in one product, so neither belongs to a single engine below |
+| `db/postgres/` | `postgresql` (CLI: `psql`) |
+| `db/mysql/` | `mariadb` (CLI: `mysql`) — nixpkgs has no client-only attribute, so this is the full server+client package |
+| `db/redis/` | `redis` (CLI: `redis-cli`) |
+| `db/redis/ide/` | RedisInsight — Redis-specific GUI, so it's under `redis/` rather than `db/ide/` |
+| `db/mongo/` | `mongosh` (official CLI shell) |
+| `db/mongo/ide/` | MongoDB Compass + Robo 3T — Mongo-specific GUIs |
+
+`profiles/db-dev.nix` imports all of the above in one go; there's no
+per-engine profile split (unlike languages) since database access tends to
+be needed all-at-once rather than one engine at a time.
+
+## JetBrains trial-reset scripts
+
+Several profiles above include a generated `reset-<IDE>` binary
+(`development/common/tools/reset-jetbrains.nix`) that clears a JetBrains
+IDE's evaluation-license state. It predates this repo's current form and is
+carried forward as-is; be aware of what it does before relying on it.
+
+## VS Code Remote Server
+
+`development/common/ide/server/` provides VS Code Remote-SSH server support
+via the
 [`nixos-vscode-server`](https://github.com/nix-community/nixos-vscode-server)
-community module. It's disabled by default — uncomment `./vs_code` in
-`development/default.nix` to enable it on a given host.
+community module. It's not part of any profile — it's added directly in
+`flake.nix` on hosts that need it (currently `asus-n56vj-server`).
 
 Once enabled, if the remote server needs a manual restart/fix:
 
@@ -51,120 +152,54 @@ systemctl --user enable auto-fix-vscode-server.service
 systemctl --user start auto-fix-vscode-server.service
 ```
 
-## Setting Up Development Environment
+## Adding a new profile
 
-### Using Nix Flakes
+1. Put the raw tool definition under `development/<language>/default.nix`
+   (or `development/common/<name>` if it isn't language-specific). Just
+   `environment.systemPackages` and whatever `programs.*`/aliases it needs —
+   no host-specific logic here.
+2. If it has a JetBrains (or other) IDE, put that under
+   `development/<language>/ide/default.nix`, importing
+   `../../common/tools/reset-jetbrains.nix` if it needs a trial-reset script.
+3. Add `profiles/<name>.nix` that imports the directory (and its `ide/` if
+   any).
+4. Add a commented `# ../../profiles/<name>.nix` line to every
+   `hosts/<name>/profiles.nix` (so it shows up as an available toggle
+   everywhere), and uncomment it on whichever host(s) should actually have
+   it active.
+5. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel
+   --no-link` to check it evaluates before switching.
 
-Enter a development shell:
+## Building and Applying
+
 ```bash
-nix flake enter .#dev
+# Dry-build only (safe, doesn't touch the running system)
+nix build .#nixosConfigurations.<host>.config.system.build.toplevel --no-link
+
+# Build + activate on next boot
+sudo nixos-rebuild build --flake .#<host>
+
+# Build + activate now
+sudo nixos-rebuild switch --flake .#<host>
 ```
 
-### Python Development
-
-Create a Python environment:
-```bash
-nix develop .#python
-```
-
-### Nix Development
-
-Work with NixOS configuration:
-```bash
-nix develop .#nix
-```
-
-## Workflow
-
-1. **Clone repository**
-   ```bash
-   git clone <repo-url>
-   cd flake-nixos-config
-   ```
-
-2. **Enter development environment**
-   ```bash
-   nix develop
-   ```
-
-3. **Make changes**
-   - Edit Nix files
-   - Test configurations
-   - Run development tools
-
-4. **Build and test**
-   ```bash
-   sudo nixos-rebuild build --flake .#asus-n56vj-desktop
-   # or .#asus-n56vj-server
-   ```
-
-5. **Apply changes**
-   ```bash
-   sudo nixos-rebuild switch --flake .#asus-n56vj-desktop
-   # or .#asus-n56vj-server
-   ```
-
-## Development Tools
-
-### Configuration Management
-- Nix language and flakes
-- Home-manager for user configuration
-- NixOS modules system
-
-### Version Control
-- Git with custom hooks
-- GitHub integration
-- Branch management tools
-
-### Code Quality
-- Linters and formatters
-- Type checkers
-- Test runners
-
-## Best Practices
-
-1. **Use flakes for reproducibility**
-   - Pin versions explicitly
-   - Use lockfiles
-   - Test in isolation
-
-2. **Keep configurations modular**
-   - One concern per module
-   - Clear dependencies
-   - Easy to compose
-
-3. **Document your changes**
-   - Update docs with new features
-   - Add comments for complex logic
-   - Keep README updated
-
-4. **Test before deployment**
-   - Build in a sandbox
-   - Verify changes
-   - Check dependencies
+Current `<host>` values: `asus-n56vj-desktop`, `asus-n56vj-server`,
+`asus-n580vn-desktop`.
 
 ## Troubleshooting
 
 ### Flake issues
-```bash
-# Update flake.lock
-nix flake update
 
-# Check flake
+```bash
+nix flake update
 nix flake check
 ```
 
 ### Build failures
-```bash
-# Clean build
-nix-store --gc
-sudo nixos-rebuild build --flake .#asus-n56vj-desktop
-```
 
-### Environment issues
 ```bash
-# Recreate shell
-nix flake repl .
+nix-store --gc
+sudo nixos-rebuild build --flake .#<host>
 ```
 
 ## Resources
