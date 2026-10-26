@@ -21,6 +21,7 @@ development tooling across three hosts.
    pages/architecture
    pages/server/docker
    pages/server/docker-registry
+   pages/server/ecs-anywhere
    pages/server/k8s
 
 .. toctree::
@@ -39,6 +40,9 @@ Project Features
 
 ✅ **Docker Registry**
    Self-hosted registry with HTTPS support via Traefik or nginx
+
+✅ **ECS Anywhere**
+   Native (non-install-script) connection of NixOS hosts as external ECS container instances
 
 ✅ **Kubernetes Integration**
    k3s cluster management, mirrored through the local registry
@@ -79,6 +83,7 @@ Quick Links
 - :doc:`pages/architecture` - System architecture overview
 - :doc:`pages/server/docker` - Standalone Docker + TLS remote API
 - :doc:`pages/server/docker-registry` - Docker Registry setup and usage
+- :doc:`pages/server/ecs-anywhere` - ECS Anywhere setup and usage
 - :doc:`pages/server/k8s` - Kubernetes (k3s) setup
 - :doc:`pages/development/development` - Development profiles
 

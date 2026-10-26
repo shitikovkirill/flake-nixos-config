@@ -21,7 +21,7 @@ let
     CN = registry.home
 
     [v3_req]
-    subjectAltName = DNS:registry.home
+    subjectAltName = DNS:registry.home,DNS:registry.mirror
     CONF
 
     openssl req -x509 -newkey rsa:4096 \

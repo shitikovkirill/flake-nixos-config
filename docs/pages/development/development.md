@@ -44,6 +44,7 @@ development/
 │   │   ├── client.nix     # VS Code
 │   │   └── server/        # VS Code Remote-SSH server support
 │   ├── network/          # private /etc/hosts entries, dev firewall ports
+│   ├── nix-ld.nix        # run dynamically-linked non-NixOS binaries
 │   └── tools/
 │       ├── reset-jetbrains.nix
 │       └── shell.nix
@@ -67,7 +68,7 @@ development/
 
 | Profile | Imports | Contents |
 |---|---|---|
-| `minimal-dev` | `development/common/{bash.nix,git,direnv,h,ide/client.nix,ai,network}` | Baseline: shellcheck+bash history, full `programs.git` config (git, gitg, git-crypt, pre-commit), direnv+nix-direnv, `h` directory-jump, VS Code, MCP/AI tooling, private dev `/etc/hosts` + firewall port range |
+| `minimal-dev` | `development/common/{bash.nix,git,direnv,h,ide/client.nix,ai,network,nix-ld.nix}` | Baseline: shellcheck+bash history, full `programs.git` config (git, gitg, git-crypt, pre-commit), direnv+nix-direnv, `h` directory-jump, VS Code, MCP/AI tooling, private dev `/etc/hosts` + firewall port range, `nix-ld` for running dynamically-linked non-NixOS binaries |
 | `nix-dev` | `development/nix` | niv, nox, nix-info, nix-index, nixfmt, nix-prefetch-git, a `containers_rm` helper, `nixfmt_this` alias |
 | `python-dev` | `development/python` + `development/python/ide` | python3, poetry, uv, ruff, ipython, pipx, `py-clean`/`ppath` aliases, PyCharm + trial-reset script |
 | `go-dev` | `development/go` + `development/go/ide` | go, GoLand + trial-reset script |

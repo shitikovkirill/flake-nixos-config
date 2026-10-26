@@ -36,6 +36,7 @@ flake-nixos-config/
 ├── server/                      # Server applications (pulled in via profiles/server-*.nix)
 │   ├── docker/                     # Docker daemon + TLS cert generation, see docs/pages/server/docker.md
 │   ├── docker-registry/            # Self-hosted registry, see docs/pages/server/docker-registry.md
+│   ├── ecs-anywhere/               # ECS Anywhere (toggleable), see docs/pages/server/ecs-anywhere.md
 │   ├── k8s/                        # k3s, see docs/pages/server/k8s.md
 │   ├── pkgs/                       # VPN client + utilities (shared by every host, any role)
 │   └── default.nix
@@ -54,6 +55,7 @@ flake-nixos-config/
 │   │   │   ├── client.nix              # VS Code (desktop)
 │   │   │   └── server/                 # VS Code Remote-SSH server support
 │   │   ├── network/                   # private /etc/hosts entries + dev firewall ports
+│   │   ├── nix-ld.nix                 # run dynamically-linked non-NixOS binaries
 │   │   └── tools/
 │   │       ├── reset-jetbrains.nix     # shared helper — see "JetBrains reset scripts" below
 │   │       └── shell.nix               # standalone nix-shell entrypoint, not wired anywhere
@@ -180,6 +182,7 @@ and DataGrip stay at `db/ide/`.
 ### Server Layer
 - **[`profiles/server-kube.nix`](./server/k8s.md)**: k3s cluster + [docker-registry](./server/docker-registry.md) (coupled — k3s pulls images from `registry.home`)
 - **[`profiles/server-plain.nix`](./server/docker.md)**: standalone Docker daemon, TLS-only remote API, no Kubernetes
+- **[ECS Anywhere](./server/ecs-anywhere.md)**: toggleable module that registers the host as an external ECS container instance
 - **Utilities**: VPN client (`server/pkgs`), on every host regardless of role
 
 ### Development Layer

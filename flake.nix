@@ -66,6 +66,9 @@
           ./hosts/asus-n56vj/server.nix
           ./profiles/server-kube.nix
           ./profiles/server-plain.nix
+          # ECS Anywhere — registers this host as an external ECS container
+          # instance; toggled via services.ecsAnywhere.enable in server.nix.
+          ./server/ecs-anywhere
           # VS Code Remote-SSH server support — useful for a headless box
           # you connect to remotely, not enabled by default in profiles/.
           ./development/common/ide/server

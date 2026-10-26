@@ -26,6 +26,14 @@ in
         "unix:///var/run/docker.sock"
         "tcp://0.0.0.0:2376"
       ];
+      # `services.dockerRegistryMirror` is declared in the sibling
+      # server/docker-registry module, not here — fall back to `false`
+      # instead of an eval error if a host ever imports this module
+      # without that one.
+      "registry-mirrors" = lib.optional (
+        (config.services.dockerRegistryMirror or { }).enable or false
+      ) "https://registry.mirror";
+
       tls = true;
       tlsverify = true;
       tlscacert = "/home/docker/certs/ca.pem";

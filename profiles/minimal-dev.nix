@@ -9,5 +9,6 @@
     ../development/common/ide/client.nix
     ../development/common/ai
     ../development/common/network
+    ../development/common/nix-ld.nix
   ];
 }
