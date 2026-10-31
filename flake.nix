@@ -73,6 +73,8 @@
           # VS Code Remote-SSH server support — useful for a headless box
           # you connect to remotely, not enabled by default in profiles/.
           ./development/common/ide/server
+
+          ./profiles/service/minio.nix
         ];
       };
 

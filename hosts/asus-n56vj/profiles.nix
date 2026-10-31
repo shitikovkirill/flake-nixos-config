@@ -4,7 +4,7 @@
 {
   imports = [
     ../../profiles/minimal-dev.nix
-    # ../../profiles/nix-dev.nix
+    ../../profiles/nix-dev.nix
     # ../../profiles/python-dev.nix
     # ../../profiles/go-dev.nix
     # ../../profiles/js-dev.nix
