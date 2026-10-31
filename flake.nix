@@ -64,7 +64,8 @@
           ./hosts/asus-n56vj/common.nix
           ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/server.nix
-          ./profiles/server-kube.nix
+
+          ./server/docker-registry
           ./profiles/server-plain.nix
           # ECS Anywhere — registers this host as an external ECS container
           # instance; toggled via services.ecsAnywhere.enable in server.nix.
