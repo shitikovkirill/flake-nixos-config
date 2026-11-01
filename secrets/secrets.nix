@@ -6,5 +6,9 @@
     owner = "postgres";
     group = "postgres";
   };
+  sops.secrets.postgres_photo_archiver_password = {
+    owner = "postgres";
+    group = "postgres";
+  };
   sops.secrets.pgadmin_password = { };
 }
