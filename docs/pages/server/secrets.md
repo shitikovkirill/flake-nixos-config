@@ -41,10 +41,22 @@ Run on the host whose SSH host key is a recipient in `.sops.yaml`
 (`nix` is enough, no need to install `sops` system-wide):
 
 ```sh
-nix run nixpkgs#sops -- secrets/pg.yaml
+sudo sh -c '
+  export SOPS_AGE_KEY="$(nix run nixpkgs#ssh-to-age -- -private-key -i /etc/ssh/ssh_host_ed25519_key)"
+  nix run nixpkgs#sops -- secrets/pg.yaml
+'
 ```
 
 This opens the decrypted file in `$EDITOR`, re-encrypting on save.
+
+`sops`'s *own* built-in SSH-key-to-age conversion (`SOPS_AGE_SSH_PRIVATE_KEY_FILE`)
+has been unreliable in practice — it can fail with `age: identity did not
+match any of the recipients` even though the SSH keypair is valid. Deriving
+the age identity explicitly with `ssh-to-age -private-key` and passing it via
+`SOPS_AGE_KEY` sidesteps that: `ssh-to-age` is the same tool used to compute
+the recipient key in `.sops.yaml` in the first place (see below), so the two
+are guaranteed to agree. `sudo` is required because the host's private key at
+`/etc/ssh/ssh_host_ed25519_key` is only readable by root.
 
 ## Adding a new secret
 
