@@ -9,6 +9,10 @@
       url = "path:./docs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -17,6 +21,7 @@
       nixpkgs,
       home-manager,
       docs,
+      sops-nix,
       ...
     }@inputs:
     let
@@ -29,11 +34,9 @@
         (
           { config, lib, ... }:
           {
-            home-manager.users = lib.genAttrs (map (u: u.name) config.services.systemUsers.users) (
-              name: {
-                home.stateVersion = lib.mkDefault "26.05";
-              }
-            );
+            home-manager.users = lib.genAttrs (map (u: u.name) config.services.systemUsers.users) (name: {
+              home.stateVersion = lib.mkDefault "26.05";
+            });
           }
         )
         ./server/pkgs
@@ -65,6 +68,9 @@
           ./hosts/asus-n56vj/profiles.nix
           ./hosts/asus-n56vj/server.nix
 
+          sops-nix.nixosModules.sops
+          ./secrets/secrets.nix
+
           ./server/docker-registry
           ./profiles/server-plain.nix
           # ECS Anywhere — registers this host as an external ECS container
@@ -75,6 +81,9 @@
           ./development/common/ide/server
 
           ./profiles/service/minio.nix
+          ./profiles/service/pg.nix
+          ./profiles/service/rabbitmq.nix
+          ./profiles/service/mailpit.nix
         ];
       };
 

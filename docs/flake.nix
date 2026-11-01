@@ -11,18 +11,23 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
-      sphinxEnv = pkgs.python3.withPackages (ps: with ps; [
-        sphinx
-        sphinx-rtd-theme
-        myst-parser
-        furo
-      ]);
+      sphinxEnv = pkgs.python3.withPackages (
+        ps: with ps; [
+          sphinx
+          sphinx-rtd-theme
+          myst-parser
+          furo
+        ]
+      );
     in
     {
       packages.${system}.default = pkgs.stdenv.mkDerivation {
         name = "flake-nixos-config-docs";
         src = ./.;
-        buildInputs = [ sphinxEnv pkgs.gnumake ];
+        buildInputs = [
+          sphinxEnv
+          pkgs.gnumake
+        ];
 
         buildPhase = ''
           make html
@@ -36,7 +41,10 @@
 
       devShells.${system}.default = pkgs.mkShell {
         name = "docs-dev";
-        buildInputs = [ sphinxEnv pkgs.gnumake ];
+        buildInputs = [
+          sphinxEnv
+          pkgs.gnumake
+        ];
       };
     };
 }

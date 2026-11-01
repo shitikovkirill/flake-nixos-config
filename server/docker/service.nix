@@ -12,9 +12,12 @@ in
       home = "/home/docker";
       createHome = true;
     };
-  } // lib.genAttrs userNames (name: { extraGroups = [ "docker" ]; });
+  }
+  // lib.genAttrs userNames (name: {
+    extraGroups = [ "docker" ];
+  });
 
-  users.groups.docker = {};
+  users.groups.docker = { };
 
   # Docker service configuration
   virtualisation.docker = {
@@ -30,8 +33,7 @@ in
       # server/docker-registry module, not here — fall back to `false`
       # instead of an eval error if a host ever imports this module
       # without that one.
-      "registry-mirrors" = lib.optional (
-        (config.services.dockerRegistryMirror or { }).enable or false
+      "registry-mirrors" = lib.optional ((config.services.dockerRegistryMirror or { }).enable or false
       ) "https://registry.mirror";
 
       tls = true;

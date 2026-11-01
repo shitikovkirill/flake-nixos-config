@@ -1,40 +1,43 @@
 { pkgs, config, ... }:
 
 let
-  registryCert = pkgs.runCommand "registry-home-cert" {
-    buildInputs = [ pkgs.openssl ];
-  } ''
-    mkdir -p $out
+  registryCert =
+    pkgs.runCommand "registry-home-cert"
+      {
+        buildInputs = [ pkgs.openssl ];
+      }
+      ''
+        mkdir -p $out
 
-    # Create a config file for proper SAN support
-    cat > /tmp/cert.conf << 'CONF'
-    [req]
-    distinguished_name = req_distinguished_name
-    req_extensions = v3_req
-    prompt = no
+        # Create a config file for proper SAN support
+        cat > /tmp/cert.conf << 'CONF'
+        [req]
+        distinguished_name = req_distinguished_name
+        req_extensions = v3_req
+        prompt = no
 
-    [req_distinguished_name]
-    C = RU
-    ST = Moscow
-    L = Moscow
-    O = Home
-    CN = registry.home
+        [req_distinguished_name]
+        C = RU
+        ST = Moscow
+        L = Moscow
+        O = Home
+        CN = registry.home
 
-    [v3_req]
-    subjectAltName = DNS:registry.home,DNS:registry.mirror
-    CONF
+        [v3_req]
+        subjectAltName = DNS:registry.home,DNS:registry.mirror
+        CONF
 
-    openssl req -x509 -newkey rsa:4096 \
-      -keyout $out/registry.home.key -out $out/registry.home.crt \
-      -days 365 -nodes -config /tmp/cert.conf \
-      -extensions v3_req
-  '';
+        openssl req -x509 -newkey rsa:4096 \
+          -keyout $out/registry.home.key -out $out/registry.home.crt \
+          -days 365 -nodes -config /tmp/cert.conf \
+          -extensions v3_req
+      '';
 
   certDir = "/var/lib/registry-certs";
 
 in
 {
-  imports = [];
+  imports = [ ];
 
   # Setup certificate directory
   systemd.tmpfiles.rules = [

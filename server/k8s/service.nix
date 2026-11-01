@@ -9,7 +9,7 @@
     createHome = true;
   };
 
-  users.groups.k3s = {};
+  users.groups.k3s = { };
 
   # k3s Kubernetes service
   services.k3s = {
@@ -20,7 +20,10 @@
   };
 
   # Ensure k3s waits for network and registry certificate
-  systemd.services.k3s.after = [ "network-online.target" "setup-registry-cert.service" ];
+  systemd.services.k3s.after = [
+    "network-online.target"
+    "setup-registry-cert.service"
+  ];
   systemd.services.k3s.wants = [ "setup-registry-cert.service" ];
   systemd.services.k3s.requires = [ "network-online.target" ];
 

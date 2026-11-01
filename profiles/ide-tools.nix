@@ -4,7 +4,9 @@
 { pkgs, ... }:
 
 let
-  script = import ../development/common/tools/reset-jetbrains.nix { writeShellScriptBin = pkgs.writeShellScriptBin; };
+  script = import ../development/common/tools/reset-jetbrains.nix {
+    writeShellScriptBin = pkgs.writeShellScriptBin;
+  };
 in
 {
   environment.systemPackages = with pkgs; [

@@ -23,6 +23,7 @@ development tooling across three hosts.
    pages/server/docker-registry
    pages/server/ecs-anywhere
    pages/server/k8s
+   pages/server/secrets
 
 .. toctree::
    :maxdepth: 2
@@ -85,6 +86,7 @@ Quick Links
 - :doc:`pages/server/docker-registry` - Docker Registry setup and usage
 - :doc:`pages/server/ecs-anywhere` - ECS Anywhere setup and usage
 - :doc:`pages/server/k8s` - Kubernetes (k3s) setup
+- :doc:`pages/server/secrets` - Encrypted service credentials with sops-nix
 - :doc:`pages/development/development` - Development profiles
 
 Indices and tables

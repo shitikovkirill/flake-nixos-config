@@ -8,6 +8,6 @@
 
   # Open firewall for k3s API server
   networking.firewall.allowedTCPPorts = [
-    6443  # k3s API
+    6443 # k3s API
   ];
 }

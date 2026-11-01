@@ -1,6 +1,13 @@
-{ config, pkgs, lib, ... }:
-let domain = "minio.local";
-in {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  domain = "minio.local";
+in
+{
   imports = [ ../default.nix ];
 
   services.minioService = {
@@ -9,5 +16,7 @@ in {
     inherit domain;
   };
 
-  networking.hosts = { "127.0.0.1" = [ domain ]; };
+  networking.hosts = {
+    "127.0.0.1" = [ domain ];
+  };
 }

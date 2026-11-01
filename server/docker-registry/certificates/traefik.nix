@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 
 let
   certDir = "/var/lib/registry-certs";
@@ -6,20 +11,27 @@ let
   # Helper scripts
   scriptsDir = ./scripts;
 
-  waitForK8s = pkgs.writeShellScriptBin "wait-for-k8s" (builtins.readFile (scriptsDir + "/wait-for-k8s.sh"));
+  waitForK8s = pkgs.writeShellScriptBin "wait-for-k8s" (
+    builtins.readFile (scriptsDir + "/wait-for-k8s.sh")
+  );
 
   updateTraefikSecret = pkgs.writeShellScriptBin "update-traefik-secret" (
     (builtins.readFile (scriptsDir + "/update-traefik-secret.sh"))
   );
 
-  applyRegistryManifests = pkgs.writeShellScriptBin "apply-registry-manifests" (builtins.readFile (scriptsDir + "/apply-registry-manifests.sh"));
+  applyRegistryManifests = pkgs.writeShellScriptBin "apply-registry-manifests" (
+    builtins.readFile (scriptsDir + "/apply-registry-manifests.sh")
+  );
 
 in
 lib.mkIf (config.services.k3s.enable or false) {
   # Update Traefik Secret after certificate is set up
   systemd.services.update-traefik-registry-secret = {
     description = "Update Traefik Secret with registry certificate";
-    after = [ "setup-registry-cert.service" "k3s.service" ];
+    after = [
+      "setup-registry-cert.service"
+      "k3s.service"
+    ];
     wants = [ "setup-registry-cert.service" ];
     wantedBy = [ "multi-user.target" ];
     path = with pkgs; [ kubectl ];
@@ -42,7 +54,13 @@ lib.mkIf (config.services.k3s.enable or false) {
     after = [ "update-traefik-registry-secret.service" ];
     wants = [ "update-traefik-registry-secret.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = with pkgs; [ kubectl coreutils gawk gnugrep iproute2 ];
+    path = with pkgs; [
+      kubectl
+      coreutils
+      gawk
+      gnugrep
+      iproute2
+    ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${applyRegistryManifests}/bin/apply-registry-manifests";

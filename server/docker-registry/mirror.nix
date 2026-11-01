@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 # Second, standalone registry instance used purely as a pull-through cache
 # for Docker Hub (per https://distribution.github.io/distribution/recipes/mirror/).

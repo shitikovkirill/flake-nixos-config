@@ -1,16 +1,21 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 let
   cfg = config.services.minioService;
 
   proxy_pass = "http://127.0.0.1${config.services.minio.listenAddress}";
-  proxy_pass_console =
-    "http://127.0.0.1${config.services.minio.consoleAddress}";
+  proxy_pass_console = "http://127.0.0.1${config.services.minio.consoleAddress}";
 
   env = pkgs.writeText "minio-env" "MINIO_BROWSER_REDIRECT_URL=${
-      if cfg.https then "https" else "http"
-    }://ui.${cfg.domain}/";
-in {
+    if cfg.https then "https" else "http"
+  }://ui.${cfg.domain}/";
+in
+{
 
   options = {
     services.minioService = {
@@ -94,7 +99,8 @@ in {
       "d ${cfg.dataDir} 0755 minio minio -"
     ];
 
-    systemd.services.minio.serviceConfig.ProtectHome =
-  lib.mkIf (lib.hasPrefix "/home/" cfg.dataDir) (lib.mkForce false);
+    systemd.services.minio.serviceConfig.ProtectHome = lib.mkIf (lib.hasPrefix "/home/" cfg.dataDir) (
+      lib.mkForce false
+    );
   };
 }
