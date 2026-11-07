@@ -108,8 +108,11 @@
           ./hosts/rpi4/hardware-configuration.nix
           ./hosts/rpi4/common.nix
           ./hosts/rpi4/storage.nix
+          ./hosts/rpi4/services.nix
           ./profiles/micro-dev.nix
           ./profiles/service/syncthing.nix
+          ./profiles/service/vaultwarden.nix
+          ./profiles/service/backuper.nix
         ];
       };
     };
