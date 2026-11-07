@@ -104,7 +104,7 @@
       nixosConfigurations.rpi4 = nixpkgs.lib.nixosSystem {
         system = rpiSystem;
         specialArgs = { inherit inputs; };
-        modules = [
+        modules = sharedModules ++ [
           ./hosts/rpi4/hardware-configuration.nix
           ./hosts/rpi4/common.nix
           ./hosts/rpi4/storage.nix
