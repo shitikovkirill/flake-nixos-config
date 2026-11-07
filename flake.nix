@@ -109,6 +109,10 @@
           ./hosts/rpi4/common.nix
           ./hosts/rpi4/storage.nix
           ./hosts/rpi4/services.nix
+
+          sops-nix.nixosModules.sops
+          ./secrets/rpi4/secrets.nix
+
           ./profiles/micro-dev.nix
           ./profiles/service/syncthing.nix
           ./profiles/service/vaultwarden.nix
