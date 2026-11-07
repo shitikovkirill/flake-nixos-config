@@ -26,6 +26,7 @@
     }@inputs:
     let
       system = "x86_64-linux";
+      rpiSystem = "aarch64-linux";
 
       # Modules shared by every variant of every host. Dev/server package
       # sets are NOT here — each host opts into the profiles/ it wants.
@@ -97,6 +98,18 @@
           ./profiles/server-plain.nix
           ./hosts/asus-n580vn/desktop.nix
           ./desktop
+        ];
+      };
+
+      nixosConfigurations.rpi4 = nixpkgs.lib.nixosSystem {
+        system = rpiSystem;
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/rpi4/hardware-configuration.nix
+          ./hosts/rpi4/common.nix
+          ./hosts/rpi4/storage.nix
+          ./profiles/micro-dev.nix
+          ./profiles/service/syncthing.nix
         ];
       };
     };

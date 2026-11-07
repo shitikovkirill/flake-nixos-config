@@ -12,10 +12,12 @@ flake-nixos-config is a declarative NixOS system configuration that combines:
 
 ```
 flake-nixos-config/
-├── hosts/                       # Per-machine, per-role configs
+├── hosts/                       # Per-machine config (hardware, networking, storage)
 │   ├── asus-n56vj/                 # hardware-configuration.nix + common/desktop/server.nix
-│   └── asus-n580vn/                 # hardware-configuration.nix + common/desktop.nix
-├── profiles/                    # Named, opt-in package sets — each host lists
+│   ├── asus-n580vn/                # hardware-configuration.nix + common/desktop.nix
+│   └── rpi4/                       # hardware-configuration.nix + common.nix + storage.nix
+├── profiles/                    # Reusable configs across hosts (tools, services, dev)
+│   │                             # Named, opt-in package sets — each host lists
 │   │                             # the ones it wants explicitly in flake.nix.
 │   │                             # Nothing here is implied by sharedModules.
 │   ├── minimal-dev.nix            # bash, git, direnv, h, VS Code, ai/MCP, network
@@ -80,6 +82,23 @@ flake-nixos-config/
 ├── docs/                        # Documentation (Sphinx + MyST)
 └── flake.nix                    # Flake configuration — wires hosts to profiles
 ```
+
+### Organization rule: hosts vs profiles
+
+**`hosts/<name>/`** — Host-specific, non-reusable configuration:
+- `hardware-configuration.nix` — Disks, bootloader, kernel modules (generated once)
+- `common.nix` — Networking, hostname, timezone, locale (unique to this machine)
+- `storage.nix` — Mount points, storage devices (hardware-specific UUIDs)
+- `profiles.nix` — Dev tool toggles per role (when switching desktop/server)
+
+**`profiles/`** — Reusable configuration that can be shared across hosts:
+- `*-dev.nix` — Development tool sets (can be used on any host that needs them)
+- `service/` — Services (Syncthing, Postgres, etc.) with reusable module definitions
+- `server-*.nix` — Server-specific profiles
+- `micro-dev.nix`, `minimal-dev.nix` — Curated tool bundles
+
+**Rule:** If a config is specific to one machine (hardware UUID, hostname, MAC address),
+put it in `hosts/`. If it could be reused on another host, put it in `profiles/`.
 
 ### Hosts and role variants
 
