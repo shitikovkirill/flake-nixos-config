@@ -70,7 +70,7 @@
           ./hosts/asus-n56vj/server.nix
 
           sops-nix.nixosModules.sops
-          ./secrets/secrets.nix
+          ./secrets/asus-n56vj/secrets.nix
 
           ./server/docker-registry
           ./profiles/server-plain.nix

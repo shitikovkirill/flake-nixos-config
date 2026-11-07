@@ -8,7 +8,7 @@ creation_rules:
       - age:
           - *host_rpi4
           - *host_asus_n56vj
-  - path_regex: secrets/.*\.yaml$
+  - path_regex: ^secrets/asus-n56vj/.*\.yaml$
     key_groups:
       - age:
           - *host_asus_n56vj
