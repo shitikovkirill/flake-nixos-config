@@ -3,7 +3,7 @@ keys:
   - &host_rpi4 age1ujxp49u6jultgw2tj2w9lmmnz6697qpupuj74f3j005g6w70uchqa26epm
 
 creation_rules:
-  - path_regex: ^secrets/rpi4/.*\.yaml$
+  - path_regex: ^secrets/rpi4/.*\.(env|yaml)$
     key_groups:
       - age:
           - *host_rpi4

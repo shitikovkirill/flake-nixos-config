@@ -5,7 +5,7 @@
 
   services.vaultwardenService = {
     enable = true;
-    domain = "vault.local";
+    domain = config.sops.secrets.vaultwarden_domain.path;
     databasePasswordFile = config.sops.secrets.vaultwarden_database_password.path;
     databaseUser = "vaultwarden";
     port = 80;

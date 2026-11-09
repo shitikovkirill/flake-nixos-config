@@ -111,13 +111,22 @@
           ./hosts/rpi4/services.nix
 
           sops-nix.nixosModules.sops
-          ./secrets/rpi4/secrets.nix
+          ./secrets/rpi4/backuper.nix
 
           ./profiles/micro-dev.nix
           ./profiles/service/syncthing.nix
-          ./profiles/service/vaultwarden.nix
+          # ./profiles/service/vaultwarden.nix
           ./profiles/service/backuper.nix
         ];
       };
+
+      devShells.${system}.default =
+        nixpkgs.legacyPackages.${system}.mkShell {
+          packages = with nixpkgs.legacyPackages.${system}; [
+            sops
+            age
+            ssh-to-age
+          ];
+        };
     };
 }
