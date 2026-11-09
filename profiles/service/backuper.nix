@@ -9,7 +9,7 @@
     databases = [ "vaultwarden" ];
     include = [ "/var/lib/vaultwarden" ];
 
-    target = config.sops.secrets.duplicity-target.path;
+    target = "boto3+s3://webwave-backup-folder/duplicity";
 
     secretFile = config.sops.secrets.backuper.path;
 
@@ -21,7 +21,7 @@
   services.restoreService = {
     enable = true;
 
-    target = config.sops.secrets.duplicity-target.path;
+    target = "boto3+s3://webwave-backup-folder/duplicity";
 
     secretFile = config.sops.secrets.backuper.path;
 
