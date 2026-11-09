@@ -1,6 +1,6 @@
 keys:
   - &host_asus_n56vj age1cf47nkefccqmeqc8k0x7pgfytdf49qfqlxrkl8skuv5paqdkpuascu8vf6
-  - &host_rpi4 age1ujxp49u6jultgw2tj2w9lmmnz6697qpupuj74f3j005g6w70uchqa26epm
+  - &host_rpi4 age1qqa85waulxcslhq9gc9p76e65cwys4cf7tdsly7lhhyeccqrk3ss2mu5yr
 
 creation_rules:
   - path_regex: ^secrets/rpi4/.*\.(env|yaml)$

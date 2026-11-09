@@ -14,7 +14,7 @@ Two independent modules share non-service-specific option definitions and valida
   imports = [ ./nixos-duplicity-services/restoreService ];
 
   sops.secrets.duplicity = {
-    sopsFile = ./secrets/backuper.env;
+    sopsFile = ./secrets/rpi4/backuper.env;
     format = "dotenv";
     mode = "0400";
   };
