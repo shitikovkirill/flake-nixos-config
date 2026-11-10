@@ -4,8 +4,8 @@
 
   sops.secrets.vaultwarden_database_password = {
     key = "database/password";
-    owner = "vaultwarden";
-    group = "vaultwarden";
+    owner = "postgres";
+    group = "postgres";
     mode = "0400";
   };
 

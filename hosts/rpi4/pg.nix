@@ -8,7 +8,6 @@ in
   ];
 
   sops.secrets.vaultwarden_database_password = {
-    owner = "postgres";
     # Re-run the password unit whenever the secret changes
     restartUnits = [ "set-user-password-in-db.service" ];
   };
