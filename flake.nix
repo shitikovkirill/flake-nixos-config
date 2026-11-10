@@ -112,11 +112,13 @@
 
           sops-nix.nixosModules.sops
           ./secrets/rpi4/backuper.nix
+          ./secrets/rpi4/vaultwarden.nix
 
           ./profiles/micro-dev.nix
           ./profiles/service/syncthing.nix
           # ./profiles/service/vaultwarden.nix
           ./profiles/service/backuper.nix
+          ./hosts/rpi4/pg.nix
         ];
       };
 

@@ -7,7 +7,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos";
+  networking.hostName = "asus-n56vj";
   networking.networkmanager.enable = true;
 
   # time.timeZone comes from the shared ./system module.
