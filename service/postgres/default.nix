@@ -115,8 +115,10 @@ in
         description = "Set database user password";
         after = [
           "postgresql.service"
+          "postgresql-setup.service"
           "sops-nix.service"
         ];
+        requires = [ "postgresql.service" ];
         wants = [ "sops-nix.service" ];
         wantedBy = [ "multi-user.target" ];
         script = ''
