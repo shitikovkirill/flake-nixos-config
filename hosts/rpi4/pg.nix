@@ -12,6 +12,23 @@ in
     restartUnits = [ "set-user-password-in-db.service" ];
   };
 
+  # Pi-specific PostgreSQL settings
+  services.postgresql = {
+    settings = {
+      max_connections = 20;
+      shared_buffers = "128MB";
+      effective_cache_size = "512MB";
+      work_mem = "4MB";
+      maintenance_work_mem = "64MB";
+
+      # Fewer, larger writes, which is gentler on SD cards
+      wal_compression = "on";
+      checkpoint_timeout = "15min";
+      max_wal_size = "512MB";
+      min_wal_size = "64MB";
+    };
+  };
+
   services.devPostgres = {
     enable = true;
     users = [

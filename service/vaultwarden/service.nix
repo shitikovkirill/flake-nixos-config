@@ -1,50 +1,45 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 with lib;
 let
   cfg = config.services.vaultwardenService;
+  db = cfg.database;
+  scheme = if cfg.https then "https" else "http";
+  usePostgres = db.backend == "postgresql";
+
+  databaseUrl =
+    if hasPrefix "/" db.host
+    then "postgresql://${db.user}@/${db.name}?host=${db.host}"   # Unix socket
+    else "postgresql://${db.user}@${db.host}/${db.name}";        # TCP (no password)
 in
 {
   config = mkIf cfg.enable {
-    systemd.services.vaultwarden = {
-      description = "Vaultwarden password manager";
-      after = [ "network.target" "postgresql.service" ];
-      requires = [ "postgresql.service" ];
-      wantedBy = [ "multi-user.target" ];
+    services.vaultwarden = {
+      enable = true;
+      dbBackend = db.backend;
+      environmentFile = cfg.environmentFile;
 
-      environment = {
-        DOMAIN = "http://${cfg.domain}";
-        ROCKET_ADDRESS = "0.0.0.0";
-        ROCKET_PORT = toString cfg.port;
+      config = {
+        DOMAIN = "${scheme}://${cfg.domain}";
+        ROCKET_ADDRESS = cfg.address;
+        ROCKET_PORT = cfg.port;
         ROCKET_LOG = "critical";
-        SHOW_PASSWORD_HINT = "false";
-        INVITATIONS_ALLOWED = "false";
-        SIGNUPS_ALLOWED = "false";
-        LOG_FILE = "/var/log/vaultwarden.log";
-      };
 
-      script = ''
-        ${if cfg.databasePasswordFile != null then ''
-          PASSWORD=$(cat ${cfg.databasePasswordFile})
-          export DATABASE_URL="postgresql://${cfg.databaseUser}:$PASSWORD@localhost/vaultwarden"
-        '' else ''
-          export DATABASE_URL="postgresql://${cfg.databaseUser}:${cfg.databasePassword}@localhost/vaultwarden"
-        ''}
-        exec ${pkgs.vaultwarden}/bin/vaultwarden
-      '';
+        SHOW_PASSWORD_HINT = false;
+        INVITATIONS_ALLOWED = false;
+        SIGNUPS_ALLOWED = false;
+      }
+      // optionalAttrs usePostgres {
+        DATABASE_URL = databaseUrl;
+        DATABASE_MAX_CONNS = 5;
+      }
+      // cfg.extraConfig;
+    };
 
-      serviceConfig = {
-        Type = "simple";
-        User = "vaultwarden";
-        Group = "vaultwarden";
-        Restart = "on-failure";
-        RestartSec = 10;
-        WorkingDirectory = "/var/lib/vaultwarden";
-        StateDirectory = "vaultwarden";
-        LogsDirectory = "vaultwarden";
-        PrivateTmp = true;
-        NoNewPrivileges = true;
-      };
+    # Wait for the database provided by the other service
+    systemd.services.vaultwarden = mkIf usePostgres {
+      after = db.dependsOn;
+      requires = db.dependsOn;
     };
   };
 }
