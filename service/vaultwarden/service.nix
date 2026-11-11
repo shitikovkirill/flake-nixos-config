@@ -17,7 +17,9 @@ in
     services.vaultwarden = {
       enable = true;
       dbBackend = db.backend;
-      environmentFile = cfg.environmentFile;
+
+      # Leave the upstream default (null on old nixpkgs, [ ] on new) when unset
+      environmentFile = mkIf (cfg.environmentFile != null) cfg.environmentFile;
 
       config = {
         DOMAIN = "${scheme}://${cfg.domain}";
