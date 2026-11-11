@@ -100,6 +100,8 @@ in
         STNODEFAULTFOLDER = mkDefault "yes";
       };
 
+      unitConfig.RequiresMountsFor = [ cfg.dataDir cfg.databaseDir ];
+
       serviceConfig = {
         User = cfg.user;
         Group = cfg.group;
