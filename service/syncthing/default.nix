@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.services.syncthingService;
-  inherit (lib) mkOption mkEnableOption mkPackageOption mkIf types;
+  inherit (lib) mkOption mkEnableOption mkPackageOption mkIf mkDefault types;
 in
 {
   options.services.syncthingService = {
@@ -31,7 +31,14 @@ in
       type = types.path;
       default = "${cfg.dataDir}/config";
       defaultText = lib.literalExpression ''"''${config.services.syncthingService.dataDir}/config"'';
-      description = "Directory for Syncthing config, keys, certificates and database.";
+      description = "Directory for Syncthing config, keys and certificates.";
+    };
+
+    databaseDir = mkOption {
+      type = types.path;
+      default = cfg.configDir;
+      defaultText = lib.literalExpression "config.services.syncthingService.configDir";
+      description = "Directory for the Syncthing index database.";
     };
 
     openDefaultPorts = mkOption {
@@ -48,6 +55,13 @@ in
   };
 
   config = mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !config.services.syncthing.enable;
+        message = "services.syncthingService conflicts with the upstream services.syncthing module; enable only one.";
+      }
+    ];
+
     networking.firewall = mkIf cfg.openDefaultPorts {
       allowedTCPPorts = [ 22000 ];
       allowedUDPPorts = [ 22000 21027 ];
@@ -61,29 +75,32 @@ in
         home = cfg.dataDir;
       };
     };
+
     users.groups = mkIf (cfg.group == "syncthing") {
       syncthing = { };
     };
 
-    # Works for any path, not just /var/lib/*
     systemd.tmpfiles.rules = [
-      "d '${cfg.dataDir}'   0700 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.configDir}' 0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.dataDir}'     0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.configDir}'   0700 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.databaseDir}' 0700 ${cfg.user} ${cfg.group} - -"
     ];
 
-    systemd.services.syncthing-custom = {
+    # Named "syncthing" so this module owns syncthing.service.
+    systemd.services.syncthing = {
       description = "Syncthing service";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
+      # mkDefault: stray definitions elsewhere override instead of conflicting
       environment = {
-        STNORESTART = "1";
-        STNODEFAULTFOLDER = "1";
+        STNORESTART = mkDefault "yes";
+        STNOUPGRADE = mkDefault "yes";
+        STNODEFAULTFOLDER = mkDefault "yes";
       };
 
       serviceConfig = {
-        # Type defaults to "simple"; do not use "notify"
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.dataDir;
@@ -94,7 +111,7 @@ in
           "--no-browser"
           "--gui-address=${cfg.guiAddress}"
           "--config=${cfg.configDir}"
-          "--data=${cfg.configDir}"   # --data = database dir, not synced folders
+          "--data=${cfg.databaseDir}"
         ];
 
         Restart = "on-failure";

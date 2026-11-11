@@ -8,16 +8,10 @@ in
 {
   imports = [ ../../service/syncthing ];
 
-  # Start Syncthing only when the external disk is mounted.
-  systemd.services.syncthing.unitConfig.RequiresMountsFor = [ "/ssd" ];
-
   services.syncthingService = {
     enable = true;
-    user = userName;
-    group = "users";
-    dataDir = dataRoot;
-    configDir = "${home}/.config/syncthing";
-    openDefaultPorts = true;
-    guiAddress = "127.0.0.1:8384";
+    dataDir = "/ssd/syncthing";             # synced folders
+    databaseDir = "/ssd/syncthing-db";      # index database
+    # configDir stays on the SD card (small, rarely written)
   };
 }
