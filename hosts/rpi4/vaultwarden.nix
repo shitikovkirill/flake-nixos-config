@@ -1,6 +1,11 @@
 { pkgs, ... }:
 
 {
+
+    imports = [
+        ../../service/vaultwarden
+    ];
+
   services.vaultwardenService = {
     enable = true;
     domain = "vault.home";
