@@ -6,6 +6,15 @@
 
   services.openssh.enable = true;
 
+  # vtb-python Telegram bot - app/worker/local Bot API server as systemd
+  # services. Secrets (TELEGRAM_*/APP_DB/APP_RABBITMQ, reusing the existing
+  # "vtb" Postgres user) come from ../../secrets/asus-n56vj/secrets.nix's
+  # sops.templates."vtb-python.env".
+  services.vtb-python = {
+    enable = true;
+    environmentFile = config.sops.templates."vtb-python.env".path;
+  };
+
   services.ecsAnywhere = {
     enable = true;
     cluster = "PhotoSaver-PSClusterE98E69D4-ff8jz33nFro0";

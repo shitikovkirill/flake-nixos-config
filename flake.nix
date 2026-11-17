@@ -13,6 +13,14 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # vtb-python Telegram bot - nixosModules.default runs its app/worker/
+    # local Telegram Bot API server as systemd services, built from its
+    # own pinned nixpkgs (nixos-unstable), not this flake's nixpkgs -
+    # deliberately NOT `inputs.nixpkgs.follows`-ed, since its uv2nix/
+    # pyproject-nix build machinery is only verified against that pin.
+    vtb-python = {
+      url = "git+ssh://gitea@git.webwave.work/TelegramBot/vtb-python.git?ref=main";
+    };
   };
 
   outputs =
@@ -85,6 +93,14 @@
           ./profiles/service/pg.nix
           ./profiles/service/rabbitmq.nix
           ./profiles/service/mailpit.nix
+
+          # vtb-python Telegram bot - app/worker/local Bot API server as
+          # systemd services. Depends on the pg.nix/rabbitmq.nix services
+          # above (its own Postgres user + the local RabbitMQ guest account
+          # aren't provisioned by this module itself). Still needs
+          # `services.vtb-python.enable`/`environmentFile` set somewhere
+          # (not yet - see hosts/asus-n56vj/server.nix).
+          inputs.vtb-python.nixosModules.default
         ];
       };
 
