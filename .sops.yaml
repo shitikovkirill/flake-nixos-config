@@ -1,6 +1,7 @@
 keys:
   - &host_asus_n56vj age1cf47nkefccqmeqc8k0x7pgfytdf49qfqlxrkl8skuv5paqdkpuascu8vf6
   - &host_rpi4 age1qqa85waulxcslhq9gc9p76e65cwys4cf7tdsly7lhhyeccqrk3ss2mu5yr
+  - &user_kirill age1v3qjltwck6dsuhueavqzrquemskpkcc4fe7vtca7xgu45u9w7s3smc5853
 
 creation_rules:
   - path_regex: ^secrets/rpi4/.*\.(env|yaml)$
@@ -8,7 +9,9 @@ creation_rules:
       - age:
           - *host_rpi4
           - *host_asus_n56vj
+          - *user_kirill
   - path_regex: ^secrets/asus-n56vj/.*\.yaml$
     key_groups:
       - age:
           - *host_asus_n56vj
+          - *user_kirill
