@@ -1,5 +1,5 @@
 # Headless/server profile for this machine — no display manager, no audio.
-{ config, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [ ./lid-switch.nix ];
@@ -13,6 +13,41 @@
   services.vtb-python = {
     enable = true;
     environmentFile = config.sops.templates."vtb-python.env".path;
+  };
+
+  # photo-archiver pipeline - one systemd unit (every worker +
+  # publisher/loader) + a migrate oneshot. Sources = minio.home's `photos`
+  # bucket (root MinIO credentials) and this host's local photo library
+  # (moved to /srv/photo-archiver, group-writable by the photo-archiver
+  # system user -- /home/kirill itself is 0700 so the service can't even
+  # traverse into it, and deleting a file needs write+execute on its
+  # containing directory, not just read), target = the AWS S3 bucket
+  # from infra/'s already-deployed CDK stack. cleanup_allowed=true on
+  # both: CLEANUP may delete a source's originals once its archive copy
+  # in the AWS S3 target is verified.
+  services.photo-archiver = {
+    enable = true;
+    environmentFile = config.sops.templates."photo-archiver.env".path;
+    credentialsYaml = config.sops.templates."photo-archiver-credentials.yaml".path;
+    sourcesYaml = pkgs.writeText "photo-archiver-sources.yaml" ''
+      sources:
+        - id: minio-photos
+          backend: s3
+          bucket: photos
+          endpoint_url: http://minio.home
+          cleanup_allowed: true
+        - id: home-pictures
+          backend: folder
+          path: /srv/photo-archiver
+          cleanup_allowed: true
+    '';
+    targetsYaml = pkgs.writeText "photo-archiver-targets.yaml" ''
+      targets:
+        - id: primary-archive
+          backend: s3
+          bucket: photo-archive-fxrtk0rz
+          region: eu-central-1
+    '';
   };
 
   services.ecsAnywhere = {

@@ -21,6 +21,14 @@
     vtb-python = {
       url = "git+ssh://gitea@git.webwave.work/TelegramBot/vtb-python.git?ref=main";
     };
+    # photo-archiver pipeline - nixosModules.default runs it as one
+    # systemd service (every worker + publisher/loader in-process, see
+    # app/main.py) + a migrate oneshot. Same reasoning as vtb-python
+    # above: built from its own pinned nixpkgs/poetry2nix, deliberately
+    # NOT followed here.
+    photo-archiver = {
+      url = "git+ssh://gitea@git.webwave.work/WebWave/photo-archiver.git?ref=main";
+    };
   };
 
   outputs =
@@ -101,6 +109,16 @@
           # `services.vtb-python.enable`/`environmentFile` set somewhere
           # (not yet - see hosts/asus-n56vj/server.nix).
           inputs.vtb-python.nixosModules.default
+
+          # photo-archiver pipeline - one systemd unit (every worker +
+          # publisher/loader) + a migrate oneshot. Depends on the
+          # pg.nix/minio.nix services above (its own Postgres user is
+          # already provisioned there; MinIO/AWS S3 source and target
+          # buckets are not provisioned by this module itself). Still
+          # needs `services.photo-archiver.enable`/environmentFile/
+          # sourcesYaml/targetsYaml/credentialsYaml set somewhere (not yet
+          # - see hosts/asus-n56vj/server.nix).
+          inputs.photo-archiver.nixosModules.default
         ];
       };
 
