@@ -166,11 +166,11 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1795242508,
-        "narHash": "sha256-77VIp4D9IS7o4I2krBuIUpnMRO+n6BnOEOuR9SFbSPA=",
+        "lastModified": 1795290000,
+        "narHash": "sha256-jIuTQgmQYuYE3JGt58O0JnAQXvXWZH9GKO/5UIiuupU=",
         "ref": "main",
-        "rev": "766f10e6ae0269de5507319268ab2361ef473246",
-        "revCount": 101,
+        "rev": "c98364974c58f3ef425ef3a106dac54d6feb9649",
+        "revCount": 105,
         "type": "git",
         "url": "ssh://gitea@git.webwave.work/WebWave/photo-archiver.git"
       },
