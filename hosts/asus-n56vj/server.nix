@@ -50,6 +50,18 @@
     '';
   };
 
+  # Defaults to false upstream, but leaving it off here let every ~60s
+  # re-scan of home-pictures' local folder re-queue a brand-new duplicate
+  # DOWNLOAD job per still-present file (job-id-scoped key, not
+  # source+path) -- confirmed live on this host: new uploads were getting
+  # buried under that duplicate backlog (DOWNLOAD's own priority is
+  # deliberately the lowest) and never reaching UPLOAD at all. Needed
+  # specifically because this host's local-folder source can have a
+  # large multi-minute backlog; the S3 source doesn't re-list from
+  # scratch the same way.
+  systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_STABLE_DOWNLOAD_IDEMPOTENCY =
+    "true";
+
   services.ecsAnywhere = {
     enable = true;
     cluster = "PhotoSaver-PSClusterE98E69D4-ff8jz33nFro0";
