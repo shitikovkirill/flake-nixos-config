@@ -61,6 +61,8 @@
   # scratch the same way.
   systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_STABLE_DOWNLOAD_IDEMPOTENCY =
     "true";
+  systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_JOB_RETENTION_COMPLETED_DAYS =
+    "2";
 
   services.ecsAnywhere = {
     enable = true;
