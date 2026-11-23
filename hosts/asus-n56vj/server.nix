@@ -60,7 +60,7 @@
   # large multi-minute backlog; the S3 source doesn't re-list from
   # scratch the same way.
   systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_STABLE_DOWNLOAD_IDEMPOTENCY =
-    "true";
+    "false";
   systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_JOB_RETENTION_COMPLETED_DAYS =
     "2";
 
