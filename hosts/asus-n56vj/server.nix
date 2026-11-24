@@ -62,7 +62,7 @@
   systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_STABLE_DOWNLOAD_IDEMPOTENCY =
     "false";
   systemd.services.photo-archiver.environment.PHOTO_ARCHIVER_JOB_RETENTION_COMPLETED_DAYS =
-    "2";
+    "60";
 
   services.ecsAnywhere = {
     enable = true;
